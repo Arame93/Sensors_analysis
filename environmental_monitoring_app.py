@@ -20,7 +20,7 @@ st.title("Environmental Monitoring App")
 #st.title("Choropleth Map with Leafmap")
 
 # Load GeoJSON (make sure region names or IDs match your data)
-geojson_path = "path_to/regions.geojson"
+geojson_path = "Sensors_data/map.geojson"
 gdf = gpd.read_file(geojson_path)
 
 # Load your environmental data (average per region)
