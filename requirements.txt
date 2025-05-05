@@ -7,4 +7,5 @@ plotly
 geopandas
 leafmap
 folium
+streamlit_folium
 
