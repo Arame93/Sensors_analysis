@@ -43,7 +43,7 @@ variable_options = df["value_type"].unique().tolist()
 selected_var = st.sidebar.selectbox("Select Variable", variable_options)
 
 # Merge with GeoDataFrame
-merged = gdf.merge(df_pivot[["region", selected_var]], left_on="region_name_column", right_on="region")
+merged = gdf.merge(df_pivot[["region", selected_var]], left_on="region", right_on="region", how="left")
 
 # Plot
 m = leafmap.Map(center=[-1.3, 36.8], zoom=6)
