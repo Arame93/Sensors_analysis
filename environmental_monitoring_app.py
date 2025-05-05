@@ -33,7 +33,7 @@ df['value_type'] = df['value_type'].replace(
 )
 
 # Pivot data to get average by region and variable
-df["timestamp"] = pd.to_datetime(df["timestamp"])
+df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
 df["month"] = df["timestamp"].dt.month
 df_avg = df.groupby(["region", "value_type"])["value"].mean().reset_index()
 df_pivot = df_avg.pivot(index="region", columns="value_type", values="value").reset_index()
