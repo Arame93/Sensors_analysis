@@ -4,9 +4,106 @@ import requests
 import plotly.express as px
 import pydeck as pdk
 import io
+import seaborn as sns
+import matplotlib.pyplot as plt
 
+# Page setup
+st.set_page_config(layout="wide")
+st.title("🌍 Environmental Monitoring Dashboard")
 
-# Main App
+# Load data
+path = "Sensors_data/air_quality_data.csv"
+df = pd.read_csv(path)
+
+# Preprocessing
+df.value_type.replace(
+    ['P2', 'humidity', 'temperature', 'P1', 'pressure', 'durP1', 'durP2', 'P10'],
+    ['PM2.5', 'Humidity', 'Temperature', 'PM10', 'Pressure', 'durPM10', 'durPM2.5', 'PM10'],
+    inplace=True
+)
+
+df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
+df["date"] = df["timestamp"].dt.date
+df["hour"] = df["timestamp"].dt.hour
+df["month"] = df["timestamp"].dt.month
+df["day"] = df["timestamp"].dt.day_name()
+
+# Pivot data
+pivot_df = df.pivot_table(
+    index=["timestamp", "region", "lat", "lon", "date", "hour", "month", "day"],
+    columns="value_type",
+    values="value",
+    aggfunc="mean"
+).reset_index()
+
+st.sidebar.header("Filters")
+regions = pivot_df["region"].dropna().unique()
+selected_region = st.sidebar.selectbox("Select Region", regions)
+selected_month = st.sidebar.selectbox("Select Month", sorted(pivot_df["month"].dropna().unique()))
+selected_variable = st.sidebar.selectbox("Select Variable", pivot_df.columns[8:])
+
+df_filtered = pivot_df[
+    (pivot_df["region"] == selected_region) &
+    (pivot_df["month"] == selected_month)
+]
+
+# --- Choropleth-style Map ---
+st.subheader("📍 Choropleth-style Map by Region")
+region_avg = pivot_df.groupby("region")[selected_variable].mean().reset_index()
+
+fig_map = px.choropleth(
+    region_avg,
+    locations="region",
+    locationmode="geojson-id",  # This can be changed to 'ISO-3' or 'country names' if using global data
+    color=selected_variable,
+    color_continuous_scale="Viridis",
+    title=f"Average {selected_variable} by Region (Approximation)"
+)
+
+st.plotly_chart(fig_map, use_container_width=True)
+
+# --- Bubble Map by Location ---
+st.subheader("📌 Map of Sensor Locations by Variable Level")
+location_avg = df_filtered.groupby(["lat", "lon"])[selected_variable].mean().reset_index()
+
+fig_bubble = px.scatter_mapbox(
+    location_avg,
+    lat="lat",
+    lon="lon",
+    color=selected_variable,
+    size=selected_variable,
+    color_continuous_scale="Plasma",
+    size_max=30,
+    zoom=8,
+    mapbox_style="open-street-map",
+    title=f"{selected_variable} at Sensor Locations in {selected_region} (Month {selected_month})"
+)
+
+st.plotly_chart(fig_bubble, use_container_width=True)
+
+# --- Heatmap of Variable by Hour and Day ---
+st.subheader("⏰ Heatmap: Variable by Hour and Day")
+
+if not df_filtered.empty:
+    heatmap_data = df_filtered.pivot_table(
+        index="day", columns="hour", values=selected_variable, aggfunc="mean"
+    )
+
+    # Ensure correct order for days
+    days_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+    heatmap_data = heatmap_data.reindex(days_order)
+
+    fig, ax = plt.subplots(figsize=(12, 6))
+    sns.heatmap(heatmap_data, cmap="YlGnBu", ax=ax)
+    ax.set_title(f"Heatmap of {selected_variable} by Hour and Day ({selected_region} - Month {selected_month})")
+    st.pyplot(fig)
+else:
+    st.warning("No data available for the selected region and month.")
+
+# Footer
+st.caption("📡 Data sourced from openAFRICA | Developed with Streamlit")
+
+'''# Main App
 st.title("Environmental Mornitoring App")
 path = "Sensors_data/air_quality_data.csv"
 df = pd.read_csv(path)
@@ -48,18 +145,27 @@ selected_variable = st.selectbox("Select variable for choropleth", pivot_df.colu
 
 region_avg = pivot_df.groupby("region")[selected_variable].mean().reset_index()
 
-fig = px.choropleth(
-    region_avg,
-    locations="region",
-    locationmode="geojson-id",  # or adjust as per your geojson or naming
+# Average value by location
+location_avg = df_filtered.groupby(["lat", "lon"])[selected_variable].mean().reset_index()
+
+# Set your Mapbox token (optional, but better map styles if you have one)
+px.set_mapbox_access_token("your_mapbox_token_here")  # You can skip if not using custom token
+
+# Create the "choropleth-like" bubble map
+fig = px.scatter_mapbox(
+    location_avg,
+    lat="lat",
+    lon="lon",
     color=selected_variable,
+    size=selected_variable,
     color_continuous_scale="Viridis",
-    title=f"Average {selected_variable} by Region"
+    size_max=30,
+    zoom=5,
+    title=f"Average {selected_variable} by Location",
+    height=600
 )
+
 st.plotly_chart(fig)
-
-
-
 
 #avg_by_day = df_filtered.groupby("date")["value"].mean().reset_index()
 #st.line_chart(avg_by_day.set_index("date"))
@@ -124,7 +230,7 @@ fig = px.imshow(
     aspect="auto",
     color_continuous_scale="Turbo"
 )
-st.plotly_chart(fig)
+st.plotly_chart(fig)'''
 
 '''# 2. Time Series Analysis
 st.header("Time Series Analysis")
