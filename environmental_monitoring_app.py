@@ -4,7 +4,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import json
 import calendar
-
+import os
 
 # Page setup
 st.set_page_config(layout="wide")
@@ -15,7 +15,7 @@ path = "Sensors_data/air_quality_data.csv"
 df = pd.read_csv(path)
 
 # Preprocessing
-df.value_type = df.value_type.replace(
+df["value_type"] = df["value_type"].replace(
     ['P2', 'humidity', 'temperature', 'P1', 'pressure', 'durP1', 'durP2', 'P10'],
     ['PM2.5', 'Humidity', 'Temperature', 'PM10', 'Pressure', 'durPM10', 'durPM2.5', 'PM10']
 )
@@ -37,92 +37,69 @@ pivot_df = df.pivot_table(
 # Sidebar filters
 st.sidebar.header("Filters")
 
-# Region select (single)
 regions = pivot_df["region"].dropna().unique()
-selected_region = st.sidebar.selectbox("Select Region", regions)
+selected_region = st.sidebar.selectbox("Select Region", sorted(regions))
 
-# Convert month numbers to names
+# Month selection
 month_numbers = sorted(pivot_df["month"].dropna().unique())
 month_names = [calendar.month_name[int(m)] for m in month_numbers]
 month_mapping = dict(zip(month_names, month_numbers))
-
 selected_month_name = st.sidebar.selectbox("Select Month", month_names)
 selected_month = month_mapping[selected_month_name]
 
-# Multiselect for variables (displayed as checkboxes)
+# Multiselect as checkboxes
 variable_options = list(pivot_df.columns[8:])
-cols = st.sidebar.columns(3)  # Creates 3 buttons per row
-selected_vars = []
-for i, var in enumerate(variable_options):
-    if cols[i % 3].checkbox(var):
-        selected_vars.append(var)
+cols = st.sidebar.columns(3)
+selected_vars = [var for i, var in enumerate(variable_options) if cols[i % 3].checkbox(var)]
 
-# Check selected variables
-if not selected_vars:
-    st.warning("Please select at least one variable.")
-else:
-    # Filter
-    filtered_df = pivot_df[
-        (pivot_df["region"] == selected_region) &
-        (pivot_df["month"] == selected_month)
-    ]
+# Filtered data
+filtered_df = pivot_df[
+    (pivot_df["region"] == selected_region) & 
+    (pivot_df["month"] == selected_month)
+]
 
+# Time-series line chart
+if selected_vars:
     if filtered_df.empty:
         st.warning("No data available for the selected region and month.")
     else:
-        # Group by date
         daily_avg = filtered_df.groupby("date")[selected_vars].mean().reset_index()
 
         if daily_avg[selected_vars].isnull().all().all():
             st.warning("Selected variables contain only missing values for this filter.")
         else:
-            # Plot
             fig = px.line(
                 daily_avg,
                 x="date",
                 y=selected_vars,
-                title=f"Daily Variation of Selected Variables in {selected_region} ({selected_month_name})",
+                title=f"Daily Variation in {selected_region} ({selected_month_name})",
                 labels={"value": "Average Value", "variable": "Parameter"},
             )
             st.plotly_chart(fig, use_container_width=True)
+else:
+    st.info("Please select at least one variable to visualize.")
 
-
-# If no variables selected, show a message
-if not selected_vars:
-    st.warning("Please select at least one variable for the map.")
-
-# Get data for the selected variables
+# Choropleth Map
 if selected_vars:
-    # Aggregated by region for selected variables
     selected_df = pivot_df.groupby("region")[selected_vars].mean().reset_index()
+    selected_df = selected_df.dropna(subset=[selected_vars[0]])
 
-    # Drop rows where all selected variables are NaN
-    selected_df = selected_df.dropna(subset=selected_vars)
+    geojson_path = "Sensors_data/map.geojson"
+    if not os.path.exists(geojson_path):
+        st.error("GeoJSON file not found. Please place it at `Sensors_data/map.geojson`.")
+    else:
+        with open(geojson_path, "r") as f:
+            geojson = json.load(f)
 
-    # Load GeoJSON data for regions (make sure you have a geojson file with region boundaries)
-    # This could be a local file or fetched from an API
-    with open("Sensors_data/map.geojson") as f:
-        geojson = json.load(f)
-
-    # Now create the choropleth map using Plotly
-    fig1 = go.Figure(go.Choropleth(
-        z=selected_df[selected_vars[0]],  # use the first selected variable
-        hoverinfo='location+z',  # show region and value
-        locations=selected_df["region"],  # map the regions
-        locationmode='geojson-id',  # reference to geojson id
-        geojson=geojson,  # Use the GeoJSON boundary file
-        colorscale="Viridis",  # Color scheme for the regions
-        colorbar_title=selected_vars[0],  # Add a colorbar title
-    ))
-
-    fig1.update_layout(
-        geo=dict(
-            visible=True,
-            lakecolor='rgb(255, 255, 255)',  # Optional: Set background color of the map
-            projection_type='mercator',  # Optional: Set the map projection type
-        ),
-        title=f"Average {selected_vars[0]} by Region",  # Title based on the selected variable
-    )
-
-    # Plot the figure in Streamlit
-    st.plotly_chart(fig1)
+        # Plot choropleth map
+        fig_map = px.choropleth(
+            selected_df,
+            geojson=geojson,
+            locations="region",
+            featureidkey="properties.region",  # <-- This must match your GeoJSON property
+            color=selected_vars[0],
+            color_continuous_scale="Viridis",
+            title=f"Average {selected_vars[0]} by Region",
+        )
+        fig_map.update_geos(fitbounds="locations", visible=False)
+        st.plotly_chart(fig_map, use_container_width=True)
