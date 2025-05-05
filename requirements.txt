@@ -1,6 +1,6 @@
 streamlit
 pandas
 requests
-plotly==5.24.1
+pip install plotly
 pydeck
 io
