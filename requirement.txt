@@ -1,6 +1,7 @@
 streamlit
 pandas
 requests
+plotly
 plotly.express
 pydeck
 io
