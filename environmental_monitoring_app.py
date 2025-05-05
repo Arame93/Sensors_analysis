@@ -36,8 +36,21 @@ pivot_df = df.pivot_table(
     aggfunc="mean"
 ).reset_index()
 
+import calendar
+
+# Sidebar filters
 st.sidebar.header("Filters")
+
+# Region filter
 regions = pivot_df["region"].dropna().unique()
-selected_region = st.sidebar.selectbox("Select Region", regions)
-selected_month = st.sidebar.selectbox("Select Month", sorted(pivot_df["month"].dropna().unique()))
-selected_variable = st.sidebar.selectbox("Select Variable", pivot_df.columns[8:])
+selected_region = st.sidebar.selectbox("Select Region", sorted(regions))
+
+
+month_map = {i: calendar.month_name[i] for i in sorted(pivot_df["month"].dropna().unique())}
+month_names = list(month_map.values())
+selected_month_name = st.sidebar.radio("Select Month", month_names)
+selected_month = [k for k, v in month_map.items() if v == selected_month_name][0]
+
+# Multiselect variables (all numeric columns after pivot)
+available_variables = list(pivot_df.columns[8:])
+selected_variables = st.sidebar.multiselect("Select Variables", available_variables, default=[available_variables[0]])
