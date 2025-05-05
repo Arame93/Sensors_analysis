@@ -55,4 +55,10 @@ selected_month = month_mapping[selected_month_name]
 
 # Multiselect for variables (displayed as checkboxes)
 variable_options = list(pivot_df.columns[8:])
-selected_variable = st.sidebar.radio("Select Variable", variable_options)
+#selected_variable = st.sidebar.radio("Select Variable", variable_options)
+cols = st.sidebar.columns(3)  # Creates 3 buttons per row
+selected_vars = []
+for i, var in enumerate(variable_options):
+    if cols[i % 3].checkbox(var):
+        selected_vars.append(var)
+
