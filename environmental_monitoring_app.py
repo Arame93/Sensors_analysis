@@ -6,6 +6,8 @@ import pydeck as pdk
 import io
 import seaborn as sns
 import matplotlib.pyplot as plt
+import calendar
+
 
 # Page setup
 st.set_page_config(layout="wide")
@@ -36,7 +38,6 @@ pivot_df = df.pivot_table(
     aggfunc="mean"
 ).reset_index()
 
-import calendar
 # Sidebar filters
 st.sidebar.header("Filters")
 
