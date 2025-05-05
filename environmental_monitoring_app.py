@@ -46,7 +46,7 @@ selected_region = st.sidebar.selectbox("Select Region", regions)
 
 # Convert month numbers to names
 month_numbers = sorted(pivot_df["month"].dropna().unique())
-month_names = [calendar.month_name[m] for m in month_numbers]
+month_names = [calendar.month_name[int(m)] for m in month_numbers]
 month_mapping = dict(zip(month_names, month_numbers))
 
 selected_month_name = st.sidebar.selectbox("Select Month", month_names)
