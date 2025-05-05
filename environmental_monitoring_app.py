@@ -18,10 +18,9 @@ path = "Sensors_data/air_quality_data.csv"
 df = pd.read_csv(path)
 
 # Preprocessing
-df.value_type.replace(
+df.value_type = df.value_type.replace(
     ['P2', 'humidity', 'temperature', 'P1', 'pressure', 'durP1', 'durP2', 'P10'],
-    ['PM2.5', 'Humidity', 'Temperature', 'PM10', 'Pressure', 'durPM10', 'durPM2.5', 'PM10'],
-    inplace=True
+    ['PM2.5', 'Humidity', 'Temperature', 'PM10', 'Pressure', 'durPM10', 'durPM2.5', 'PM10']
 )
 
 df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
@@ -62,25 +61,20 @@ selected_month = month_mapping[selected_month_name]
     #if cols[i % 3].checkbox(var):
         #selected_vars.append(var)
 
-# Pivot data: value_type becomes columns
-pivot_df = df.pivot_table(
-    index=["region", "lat", "lon"],
-    columns="value_type",
-    values="value",
-    aggfunc="mean"
-).reset_index()
+# Drop rows without coordinates
+pivot_df = pivot_df.dropna(subset=["lat", "lon"])
 
-# Variables to choose from
+# List of variables to visualize
 variables = [col for col in pivot_df.columns if col not in ["region", "lat", "lon"]]
 
-# Variable selector — radio with button style
+# Button-style variable selector
 selected_variable = st.radio(
     "Select a variable to visualize:",
     options=variables,
     horizontal=True,
 )
 
-# Plot choropleth-like map using lat/lon
+# Plot map
 fig = px.scatter_mapbox(
     pivot_df,
     lat="lat",
@@ -95,7 +89,6 @@ fig = px.scatter_mapbox(
     title=f"Average {selected_variable} by Region"
 )
 
+# Use open-street-map to avoid needing Mapbox token
 fig.update_layout(mapbox_style="open-street-map")
 st.plotly_chart(fig)
-
-
