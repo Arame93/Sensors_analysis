@@ -37,20 +37,21 @@ pivot_df = df.pivot_table(
 ).reset_index()
 
 import calendar
-
 # Sidebar filters
 st.sidebar.header("Filters")
 
-# Region filter
+# Region select (single)
 regions = pivot_df["region"].dropna().unique()
-selected_region = st.sidebar.selectbox("Select Region", sorted(regions))
+selected_region = st.sidebar.selectbox("Select Region", regions)
 
+# Convert month numbers to names
+month_numbers = sorted(pivot_df["month"].dropna().unique())
+month_names = [calendar.month_name[m] for m in month_numbers]
+month_mapping = dict(zip(month_names, month_numbers))
 
-month_map = {i: calendar.month_name[i] for i in sorted(pivot_df["month"].dropna().unique())}
-month_names = list(month_map.values())
-selected_month_name = st.sidebar.radio("Select Month", month_names)
-selected_month = [k for k, v in month_map.items() if v == selected_month_name][0]
+selected_month_name = st.sidebar.selectbox("Select Month", month_names)
+selected_month = month_mapping[selected_month_name]
 
-# Multiselect variables (all numeric columns after pivot)
-available_variables = list(pivot_df.columns[8:])
-selected_variables = st.sidebar.multiselect("Select Variables", available_variables, default=[available_variables[0]])
+# Multiselect for variables (displayed as checkboxes)
+variable_options = list(pivot_df.columns[8:])
+selected_variables = st.sidebar.multiselect("Select Variables", variable_options, default=[variable_options[0]])
