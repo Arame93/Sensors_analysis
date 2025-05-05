@@ -70,7 +70,7 @@ if selected_vars:
 
     # Load GeoJSON data for regions (make sure you have a geojson file with region boundaries)
     # This could be a local file or fetched from an API
-    with open("path/to/regions_geojson.json") as f:
+    with open("Sensors_data/map.geojson") as f:
         geojson = json.load(f)
 
     # Now create the choropleth map using Plotly
