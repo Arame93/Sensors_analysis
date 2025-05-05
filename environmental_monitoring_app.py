@@ -57,47 +57,6 @@ for i, var in enumerate(variable_options):
     if cols[i % 3].checkbox(var):
         selected_vars.append(var)
 
-# Check selected variables
-if not selected_vars:
-    st.warning("Please select at least one variable.")
-else:
-    # Filter
-    filtered_df = pivot_df[
-        (pivot_df["region"] == selected_region) &
-        (pivot_df["month"] == selected_month)
-    ]
-
-    if filtered_df.empty:
-        st.warning("No data available for the selected region and month.")
-    else:
-        # Group by date
-        daily_avg = filtered_df.groupby("date")[selected_vars].mean().reset_index()
-
-        if daily_avg[selected_vars].isnull().all().all():
-            st.warning("Selected variables contain only missing values for this filter.")
-        else:
-            # Plot
-            fig = px.line(
-                daily_avg,
-                x="date",
-                y=selected_vars,
-                title=f"Daily Variation of Selected Variables in {selected_region} ({selected_month_name})",
-                labels={"value": "Average Value", "variable": "Parameter"},
-            )
-            st.plotly_chart(fig, use_container_width=True)
-
-
-# If no variables selected, show a message
-if not selected_vars:
-    st.warning("Please select at least one variable for the map.")
-
-# Get data for the selected variables
-if selected_vars:
-    # Aggregated by region for selected variables
-    selected_df = pivot_df.groupby("region")[selected_vars].mean().reset_index()
-
-    # Drop rows where all selected variables are NaN
-    selected_df = selected_df.dropna(subset=selected_vars)
 
     # Load GeoJSON data for regions (make sure you have a geojson file with region boundaries)
     # This could be a local file or fetched from an API
