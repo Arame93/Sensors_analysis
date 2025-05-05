@@ -1,15 +1,63 @@
-import streamlit as st
-import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
-import json
-import calendar
+#import streamlit as st
+#import pandas as pd
+#import plotly.express as px
+#import plotly.graph_objects as go
+#import json
+#import calendar
 
 # Page setup
 st.set_page_config(layout="wide")
 st.title("Environmental Monitoring App")
 
-# Load data
+import streamlit as st
+import geopandas as gpd
+import pandas as pd
+import leafmap.foliumap as leafmap
+from streamlit_folium import st_folium
+
+#st.set_page_config(layout="wide")
+#st.title("Choropleth Map with Leafmap")
+
+# Load GeoJSON (make sure region names or IDs match your data)
+geojson_path = "path_to/regions.geojson"
+gdf = gpd.read_file(geojson_path)
+
+# Load your environmental data (average per region)
+df = pd.read_csv("Sensors_data/air_quality_data.csv")
+
+# Replace value_type
+df['value_type'] = df['value_type'].replace(
+    ['P2', 'humidity', 'temperature', 'P1', 'pressure', 'durP1', 'durP2', 'P10'],
+    ['PM2.5', 'Humidity', 'Temperature', 'PM10', 'Pressure', 'durPM10', 'durPM2.5', 'PM10']
+)
+
+# Pivot data to get average by region and variable
+df["timestamp"] = pd.to_datetime(df["timestamp"])
+df["month"] = df["timestamp"].dt.month
+df_avg = df.groupby(["region", "value_type"])["value"].mean().reset_index()
+df_pivot = df_avg.pivot(index="region", columns="value_type", values="value").reset_index()
+
+# Sidebar variable selector
+variable_options = df["value_type"].unique().tolist()
+selected_var = st.sidebar.selectbox("Select Variable", variable_options)
+
+# Merge with GeoDataFrame
+merged = gdf.merge(df_pivot[["region", selected_var]], left_on="region_name_column", right_on="region")
+
+# Plot
+m = leafmap.Map(center=[-1.3, 36.8], zoom=6)
+m.add_data(
+    merged,
+    column=selected_var,
+    legend_title=selected_var,
+    cmap="viridis",
+    info_mode="on_hover",
+    layer_name="Choropleth",
+)
+st_data = st_folium(m, width=1000, height=600)
+
+
+'''# Load data
 path = "Sensors_data/air_quality_data.csv"
 df = pd.read_csv(path)
 
@@ -94,4 +142,4 @@ if selected_vars:
     )
 
     # Plot the figure in Streamlit
-    st.plotly_chart(fig)
+    st.plotly_chart(fig)'''
