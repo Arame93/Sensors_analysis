@@ -1,6 +1,7 @@
 streamlit
 pandas
 requests
+seaborn
 pydeck
 plotly
 
