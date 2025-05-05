@@ -62,6 +62,11 @@ st.header("Geospatial Pollution Map")
 
 # Prepare clean data
 map_df = df_filtered[["lat", "lon", selected_variable]].dropna()
+map_df = map_df.astype({"lat": "float", "lon": "float"})
+st.write("Sample coordinates", map_df.head())
+map_df["scaled_value"] = map_df[selected_variable] * 20  # Adjust scale if needed
+
+map_df = df_filtered[["lat", "lon", selected_variable]].dropna()
 map_df = map_df.groupby(["lat", "lon"])[selected_variable].mean().reset_index()
 map_df = map_df.astype({"lat": "float", "lon": "float"})
 
