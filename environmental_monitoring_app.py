@@ -4,16 +4,17 @@
 #import plotly.graph_objects as go
 #import json
 #import calendar
-
-# Page setup
-st.set_page_config(layout="wide")
-st.title("Environmental Monitoring App")
-
 import streamlit as st
 import geopandas as gpd
 import pandas as pd
 import leafmap.foliumap as leafmap
 from streamlit_folium import st_folium
+
+# Page setup
+st.set_page_config(layout="wide")
+st.title("Environmental Monitoring App")
+
+
 
 #st.set_page_config(layout="wide")
 #st.title("Choropleth Map with Leafmap")
