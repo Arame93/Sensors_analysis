@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import requests
-import plotly
 import plotly.express as px
 import pydeck as pdk
 import io
