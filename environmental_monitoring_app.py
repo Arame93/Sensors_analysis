@@ -7,7 +7,7 @@ import io
 
 
 # Main App
-st.title("Air Quality Explorer")
+st.title("Environmental Mornitoring App")
 path = "Sensors_data/air_quality_data.csv"
 df = pd.read_csv(path)
 
@@ -25,13 +25,13 @@ df["hour"] = df["timestamp"].dt.hour
 #     st.success(f"Loaded {len(df)} records.")
 #     st.dataframe(df.head())
 
-st.sidebar.header("Filters")
-selected_city = st.sidebar.selectbox("Choose a region", df["region"].unique())
+#st.sidebar.header("Filters")
+#selected_city = st.sidebar.selectbox("Choose a region", df["region"].unique())
 
-df_filtered = df[df["region"] == selected_city]
+#df_filtered = df[df["region"] == selected_city]
 
 # 1. Descriptive Analysis
-st.header("Descriptive Analysis")
+#st.header("Descriptive Analysis")
 st.write("Average air pollution level per day")
 
 avg_by_day = df_filtered.groupby("date")["value"].mean().reset_index()
