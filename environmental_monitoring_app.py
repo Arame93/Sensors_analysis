@@ -57,6 +57,27 @@ for i, var in enumerate(variable_options):
     if cols[i % 3].checkbox(var):
         selected_vars.append(var)
 
+# Filter data by selected region and month
+filtered_df = pivot_df[
+    (pivot_df["region"] == selected_region) &
+    (pivot_df["month"] == selected_month)
+]
+
+# Group by date and calculate daily averages
+daily_avg = filtered_df.groupby("date")[selected_vars].mean().reset_index()
+
+# Plot line chart
+fig = px.line(
+    daily_avg,
+    x="date",
+    y=selected_vars,
+    title=f"Daily Variation of Selected Variables in {selected_region} ({selected_month_name})",
+    labels={"value": "Average Value", "variable": "Parameter"},
+)
+
+st.plotly_chart(fig, use_container_width=True)
+
+
 # If no variables selected, show a message
 if not selected_vars:
     st.warning("Please select at least one variable for the map.")
