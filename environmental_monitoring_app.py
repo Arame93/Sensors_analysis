@@ -65,9 +65,32 @@ st.plotly_chart(fig)
 #max_day = avg_by_day.loc[avg_by_day['value'].idxmax()]
 #st.write(f"Highest pollution day: **{max_day['date']}** with value **{max_day['value']:.2f}**")
 
-# 2. Time Series Analysis
+
+# Filter section
+selected_city = st.selectbox("Select city/region", pivot_df["region"].unique())
+selected_month = st.selectbox("Select month", sorted(pivot_df["month"].dropna().unique()))
+selected_heatmap_var = st.selectbox("Select variable for heatmap", pivot_df.columns[7:])
+
+# Apply filter
+filtered = pivot_df[
+    (pivot_df["region"] == selected_city) & (pivot_df["month"] == selected_month)
+]
+
+heatmap_data = filtered.groupby(["date", "hour"])[selected_heatmap_var].mean().unstack()
+
+# Plot heatmap
+st.write(f"Hourly average of {selected_heatmap_var} in {selected_city} for month {selected_month}")
+fig = px.imshow(
+    heatmap_data,
+    labels=dict(x="Hour", y="Date", color=selected_heatmap_var),
+    aspect="auto",
+    color_continuous_scale="Turbo"
+)
+st.plotly_chart(fig)
+
+'''# 2. Time Series Analysis
 st.header("Time Series Analysis")
-st.write("Hourly air quality trends")
+st.write("Hourly air quality trends") 
 
 hourly_avg = df_filtered.groupby("hour")["value"].mean().reset_index()
 fig_hourly = px.line(hourly_avg, x="hour", y="value", title="Average Pollution by Hour")
@@ -121,7 +144,7 @@ st.dataframe(anomalies[["timestamp", "value", "region"]].sort_values("value", as
 # 7. Correlation Analysis (optional if weather data exists)
 st.header("🌦️ Correlation with Weather")
 st.write("Load and join weather data here for advanced analysis.")
-st.warning("This section requires weather data (e.g., temperature, wind speed).")
+st.warning("This section requires weather data (e.g., temperature, wind speed).")'''
 
 # Footer
 st.caption("Built with Streamlit and openAFRICA data")
