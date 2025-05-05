@@ -18,6 +18,7 @@ df.value_type.replace(['P2', 'humidity','temperature','P1', 'pressure','durP1', 
 df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
 df["date"] = df["timestamp"].dt.date
 df["hour"] = df["timestamp"].dt.hour
+df["month"] = df["timestamp"].dt.month
 
 # if df.empty:
 #     st.error("No data loaded from API.")
@@ -34,11 +35,35 @@ df["hour"] = df["timestamp"].dt.hour
 #st.header("Descriptive Analysis")
 st.write("Average air pollution level per day")
 
-avg_by_day = df_filtered.groupby("date")["value"].mean().reset_index()
-st.line_chart(avg_by_day.set_index("date"))
+# Pivot the data
+pivot_df = df.pivot_table(
+    index=["timestamp", "region", "lat", "lon", "date", "hour", "month"],
+    columns="value_type",
+    values="value",
+    aggfunc="mean"
+).reset_index()
 
-max_day = avg_by_day.loc[avg_by_day['value'].idxmax()]
-st.write(f"Highest pollution day: **{max_day['date']}** with value **{max_day['value']:.2f}**")
+# Select variable for map
+selected_variable = st.selectbox("Select variable for choropleth", pivot_df.columns[7:])
+
+region_avg = pivot_df.groupby("region")[selected_variable].mean().reset_index()
+
+fig = px.choropleth(
+    region_avg,
+    locations="region",
+    locationmode="geojson-id",  # Or adjust as per your geojson or naming
+    color=selected_variable,
+    color_continuous_scale="Viridis",
+    title=f"Average {selected_variable} by Region"
+)
+
+st.plotly_chart(fig)
+
+#avg_by_day = df_filtered.groupby("date")["value"].mean().reset_index()
+#st.line_chart(avg_by_day.set_index("date"))
+
+#max_day = avg_by_day.loc[avg_by_day['value'].idxmax()]
+#st.write(f"Highest pollution day: **{max_day['date']}** with value **{max_day['value']:.2f}**")
 
 # 2. Time Series Analysis
 st.header("Time Series Analysis")
