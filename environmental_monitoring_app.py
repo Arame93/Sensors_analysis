@@ -58,6 +58,26 @@ fig = px.choropleth(
 )
 st.plotly_chart(fig)
 
+
+
+
+#avg_by_day = df_filtered.groupby("date")["value"].mean().reset_index()
+#st.line_chart(avg_by_day.set_index("date"))
+
+#max_day = avg_by_day.loc[avg_by_day['value'].idxmax()]
+#st.write(f"Highest pollution day: **{max_day['date']}** with value **{max_day['value']:.2f}**")
+
+
+# Filter section
+selected_city = st.selectbox("Select city/region", pivot_df["region"].unique())
+selected_month = st.selectbox("Select month", sorted(pivot_df["month"].dropna().unique()))
+selected_heatmap_var = st.selectbox("Select variable for heatmap", pivot_df.columns[7:])
+
+# Apply filter
+filtered = pivot_df[
+    (pivot_df["region"] == selected_city) & (pivot_df["month"] == selected_month)
+]
+
 st.header("Geospatial Pollution Map")
 
 # Prepare clean data
@@ -93,24 +113,6 @@ st.pydeck_chart(pdk.Deck(
         ),
     ],
 ))
-
-
-#avg_by_day = df_filtered.groupby("date")["value"].mean().reset_index()
-#st.line_chart(avg_by_day.set_index("date"))
-
-#max_day = avg_by_day.loc[avg_by_day['value'].idxmax()]
-#st.write(f"Highest pollution day: **{max_day['date']}** with value **{max_day['value']:.2f}**")
-
-
-# Filter section
-selected_city = st.selectbox("Select city/region", pivot_df["region"].unique())
-selected_month = st.selectbox("Select month", sorted(pivot_df["month"].dropna().unique()))
-selected_heatmap_var = st.selectbox("Select variable for heatmap", pivot_df.columns[7:])
-
-# Apply filter
-filtered = pivot_df[
-    (pivot_df["region"] == selected_city) & (pivot_df["month"] == selected_month)
-]
 
 heatmap_data = filtered.groupby(["date", "hour"])[selected_heatmap_var].mean().unstack()
 
