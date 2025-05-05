@@ -61,21 +61,25 @@ filtered_df = pivot_df[pivot_df["month"] == selected_month].copy()
 if selected_vars:
     filtered_df["composite"] = filtered_df[selected_vars].mean(axis=1)
 
-    fig = px.scatter_mapbox(
-        filtered_df,
-        lat="lat",
-        lon="lon",
-        color="composite",
-        size="composite",
-        hover_name="region",
-        color_continuous_scale="Viridis",
-        size_max=30,
-        zoom=4,
-        height=600,
-        title=f"Map of {' + '.join(selected_vars)} Across All Regions ({selected_month_name})"
-    )
+    # Drop rows with NaN composite values
+    map_df = filtered_df.dropna(subset=["composite", "lat", "lon"])
 
-    fig.update_layout(mapbox_style="open-street-map")
-    st.plotly_chart(fig)
-else:
-    st.warning("Please select at least one variable to visualize on the map.")
+    if map_df.empty:
+        st.warning("No data available for the selected variables and month.")
+    else:
+        fig = px.scatter_mapbox(
+            map_df,
+            lat="lat",
+            lon="lon",
+            color="composite",
+            size="composite",
+            hover_name="region",
+            color_continuous_scale="Viridis",
+            size_max=30,
+            zoom=4,
+            height=600,
+            title=f"Map of {' + '.join(selected_vars)} Across All Regions ({selected_month_name})"
+        )
+
+        fig.update_layout(mapbox_style="open-street-map")
+        st.plotly_chart(fig)
