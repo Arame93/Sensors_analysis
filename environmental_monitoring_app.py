@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 # Page setup
 st.set_page_config(layout="wide")
-st.title("🌍 Environmental Monitoring Dashboard")
+st.title("Environmental Monitoring App")
 
 # Load data
 path = "Sensors_data/air_quality_data.csv"
@@ -48,7 +48,7 @@ df_filtered = pivot_df[
 ]
 
 # --- Choropleth-style Map ---
-st.subheader("📍 Choropleth-style Map by Region")
+st.subheader("Choropleth-style map by region")
 region_avg = pivot_df.groupby("region")[selected_variable].mean().reset_index()
 
 fig_map = px.choropleth(
@@ -63,7 +63,7 @@ fig_map = px.choropleth(
 st.plotly_chart(fig_map, use_container_width=True)
 
 # --- Bubble Map by Location ---
-st.subheader("📌 Map of Sensor Locations by Variable Level")
+st.subheader("Map of sensor locations by variable level")
 location_avg = df_filtered.groupby(["lat", "lon"])[selected_variable].mean().reset_index()
 
 fig_bubble = px.scatter_mapbox(
@@ -76,13 +76,13 @@ fig_bubble = px.scatter_mapbox(
     size_max=30,
     zoom=8,
     mapbox_style="open-street-map",
-    title=f"{selected_variable} at Sensor Locations in {selected_region} (Month {selected_month})"
+    title=f"{selected_variable} at sensor locations in {selected_region} (Month {selected_month})"
 )
 
 st.plotly_chart(fig_bubble, use_container_width=True)
 
-# --- Heatmap of Variable by Hour and Day ---
-st.subheader("⏰ Heatmap: Variable by Hour and Day")
+# --- Heatmap of variable by hour and day ---
+st.subheader("Heatmap: Variable by hour and day")
 
 if not df_filtered.empty:
     heatmap_data = df_filtered.pivot_table(
