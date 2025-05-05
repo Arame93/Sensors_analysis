@@ -48,7 +48,7 @@ df_filtered = pivot_df[
 ]
 
 # --- Choropleth-style Map ---
-st.subheader("Choropleth-style map by region")
+#st.subheader("Choropleth-style map by region")
 region_avg = pivot_df.groupby("region")[selected_variable].mean().reset_index()
 
 fig_map = px.choropleth(
@@ -62,24 +62,24 @@ fig_map = px.choropleth(
 
 st.plotly_chart(fig_map, use_container_width=True)
 
-# --- Bubble Map by Location ---
-st.subheader("Map of sensor locations by variable level")
-location_avg = df_filtered.groupby(["lat", "lon"])[selected_variable].mean().reset_index()
+## --- Bubble Map by Location ---
+#st.subheader("Map of sensor locations by variable level")
+#location_avg = df_filtered.groupby(["lat", "lon"])[selected_variable].mean().reset_index()
 
-fig_bubble = px.scatter_mapbox(
-    location_avg,
-    lat="lat",
-    lon="lon",
-    color=selected_variable,
-    size=selected_variable,
-    color_continuous_scale="Plasma",
-    size_max=30,
-    zoom=8,
-    mapbox_style="open-street-map",
-    title=f"{selected_variable} at sensor locations in {selected_region} (Month {selected_month})"
-)
+#fig_bubble = px.scatter_mapbox(
+    #location_avg,
+    #lat="lat",
+    #lon="lon",
+    #color=selected_variable,
+    #size=selected_variable,
+    #color_continuous_scale="Plasma",
+    #size_max=30,
+    #zoom=8,
+    #mapbox_style="open-street-map",
+    #title=f"{selected_variable} at sensor locations in {selected_region} (Month {selected_month})"
+#)
 
-st.plotly_chart(fig_bubble, use_container_width=True)
+#st.plotly_chart(fig_bubble, use_container_width=True)
 
 # --- Heatmap of variable by hour and day ---
 st.subheader("Heatmap: Variable by hour and day")
