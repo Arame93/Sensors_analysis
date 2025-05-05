@@ -96,7 +96,7 @@ if selected_vars:
         geojson = json.load(f)
 
     # Now create the choropleth map using Plotly
-    fig = go.Figure(go.Choropleth(
+    fig1 = go.Figure(go.Choropleth(
         z=selected_df[selected_vars[0]],  # use the first selected variable
         hoverinfo='location+z',  # show region and value
         locations=selected_df["region"],  # map the regions
@@ -106,7 +106,7 @@ if selected_vars:
         colorbar_title=selected_vars[0],  # Add a colorbar title
     ))
 
-    fig.update_layout(
+    fig1.update_layout(
         geo=dict(
             visible=True,
             lakecolor='rgb(255, 255, 255)',  # Optional: Set background color of the map
@@ -116,4 +116,4 @@ if selected_vars:
     )
 
     # Plot the figure in Streamlit
-    st.plotly_chart(fig)
+    st.plotly_chart(fig1)
