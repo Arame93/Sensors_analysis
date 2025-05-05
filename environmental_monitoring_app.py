@@ -51,13 +51,44 @@ region_avg = pivot_df.groupby("region")[selected_variable].mean().reset_index()
 fig = px.choropleth(
     region_avg,
     locations="region",
-    locationmode="geojson-id",  # Or adjust as per your geojson or naming
+    locationmode="geojson-id",  # or adjust as per your geojson or naming
     color=selected_variable,
     color_continuous_scale="Viridis",
     title=f"Average {selected_variable} by Region"
 )
-
 st.plotly_chart(fig)
+
+st.header("Geospatial Pollution Map")
+
+# Prepare clean data
+map_df = df_filtered[["lat", "lon", selected_variable]].dropna()
+map_df = map_df.groupby(["lat", "lon"])[selected_variable].mean().reset_index()
+map_df = map_df.astype({"lat": "float", "lon": "float"})
+
+# Optional: scale value for color intensity
+max_val = map_df[selected_variable].max()
+map_df["color"] = map_df[selected_variable] / max_val * 255  # scale to 0–255
+
+st.pydeck_chart(pdk.Deck(
+    map_style="mapbox://styles/mapbox/light-v9",
+    initial_view_state=pdk.ViewState(
+        latitude=map_df["lat"].mean(),
+        longitude=map_df["lon"].mean(),
+        zoom=10,
+        pitch=50,
+    ),
+    layers=[
+        pdk.Layer(
+            "ScatterplotLayer",
+            data=map_df,
+            get_position='[lon, lat]',
+            get_color='[color, 100, 100, 140]',  # Red channel varies
+            get_radius=200,
+            pickable=True,
+        ),
+    ],
+))
+
 
 #avg_by_day = df_filtered.groupby("date")["value"].mean().reset_index()
 #st.line_chart(avg_by_day.set_index("date"))
