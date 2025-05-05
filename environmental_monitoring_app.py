@@ -8,7 +8,8 @@ import io
 
 # Main App
 st.title("Air Quality Explorer")
-df = pd.read_csv("sensors_data.csv")
+path = "Sensors_data/air_quality_data.csv"
+df = pd.read_csv(path)
 
 df.value_type.replace(['P2', 'humidity','temperature','P1', 'pressure','durP1', 'durP2', 'P10'], 
          ['PM2.5','Humidity','Temperature', 'PM10','Pressure', 'durPM10', 'durPM2.5', 'PM10'], inplace=True)
