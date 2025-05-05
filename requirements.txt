@@ -4,4 +4,7 @@ requests
 seaborn
 pydeck
 plotly
+geopandas
+leafmap
+folium
 
