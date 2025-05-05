@@ -1,6 +1,6 @@
 streamlit
 pandas
 requests
-pip install plotly
+plotly
 pydeck
 io
