@@ -4,8 +4,8 @@ requests
 seaborn
 pydeck
 plotly
-geopandas
-leafmap
-folium
-streamlit_folium
+#geopandas
+#leafmap
+#folium
+#streamlit_folium
 
