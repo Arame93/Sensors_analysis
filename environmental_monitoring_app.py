@@ -100,10 +100,17 @@ else:
 
 # 4. Comparative Analysis
 st.header("Regional Comparison")
-region_avg = df[df["value_type"].isin(selected_vars)].groupby("region")["value"].mean().reset_index()
+region_avg = df[df["value_type"].isin(selected_vars)].groupby(["region", "value_type"])["value"].mean().reset_index()
 if not region_avg.empty:
-    fig_compare = px.bar(region_avg, x="region", y="value", title="Average Value by Region")
-    st.plotly_chart(fig_compare)
+    fig_compare = px.bar(
+        region_avg,
+        x="region",
+        y="value",
+        color="value_type",
+        barmode="group",
+        title="Average Values by Region and Variable",
+        labels={"value_type": "Variable", "value": "Average"}
+    )
 else:
     st.warning("No comparison data available.")
 
