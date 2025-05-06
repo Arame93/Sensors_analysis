@@ -64,7 +64,7 @@ else:
     st.warning("No data available for the selected filters.")
 
 # 2. Time Series Analysis
-st.header("Hourly Trends")
+st.header("⏱️ Hourly Trends")
 if not pivot_df.empty and selected_vars:
     hourly_df = pivot_df[["hour"] + selected_vars].dropna(how="all")
     hourly_long = hourly_df.melt(id_vars="hour", value_vars=selected_vars, var_name="Variable", value_name="Value")
@@ -108,7 +108,7 @@ else:
     st.warning("No comparison data available.")
 
 # 5. Trend Detection
-st.header("Trend Detection")
+st.header("📈 Trend Detection")
 if not pivot_df.empty and selected_vars:
     trend_df = pivot_df[["timestamp"] + selected_vars].set_index("timestamp").resample("D").mean().rolling(window=7).mean().reset_index()
     trend_long = trend_df.melt(id_vars="timestamp", value_vars=selected_vars, var_name="Variable", value_name="Value")
