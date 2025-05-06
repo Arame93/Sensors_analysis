@@ -6,7 +6,12 @@ import calendar
 
 # Title and config
 st.set_page_config(layout="wide")
-st.title("Environmental Monitoring App")
+#st.title("Environmental Monitoring App")
+st.markdown("""
+    <div style='background-color:#f0f2f6;padding:15px;border-radius:10px;border-left:5px solid #4A90E2'>
+        <h1 style='color:#333;'>Environmental Monitoring App</h1>
+    </div>
+""", unsafe_allow_html=True)
 
 # Load data
 df = pd.read_csv("Sensors_data/air_quality_data.csv")
@@ -160,7 +165,7 @@ if not filtered_df.empty and available_vars:
         filtered_df[filtered_df["value_type"].isin(available_vars)],
         x="value_type",
         y="value",
-        title="Boxplot of Selected Variables (Detect Outliers)",
+        title="Anomaly Detection (Detect Outliers)",
         points="outliers",
         labels={"value": "Value", "value_type": "Variable"}
     )
