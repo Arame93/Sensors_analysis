@@ -9,7 +9,7 @@ st.set_page_config(layout="wide")
 st.title("Air Quality Explorer")
 
 # Load data
-df = pd.read_csv("sensors_data.csv")
+df = pd.read_csv("Sensors_data/air_quality_data.csv")
 
 # Preprocessing
 df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
