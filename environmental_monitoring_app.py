@@ -83,14 +83,25 @@ else:
 # Line chart: Daily variation
 # ---------------------------
 if selected_vars:
-    daily_avg = filtered_df.groupby("day")[selected_vars].mean().reset_index()
+    # Average selected variables into a composite score
+    filtered_df["composite"] = filtered_df[selected_vars].mean(axis=1)
 
-    fig_line = px.line(
-            daily_avg,
-            x="day",
-            y=selected_vars,
-            labels={"value": "Average Value", "day": "Day of Week"},
-            title=f"Average by Day of Week for {selected_region} ({selected_month_name})"
+    # Drop rows where composite is NaN (no valid data for selected vars)
+    filtered_df = filtered_df.dropna(subset=["composite"])
+
+    fig = px.scatter_mapbox(
+        filtered_df,
+        lat="lat",
+        lon="lon",
+        color="composite",
+        size="composite",
+        hover_name="region",
+        color_continuous_scale="Viridis",
+        size_max=30,
+        zoom=5,
+        height=600,
+        title=f"Average {' + '.join(selected_vars)} in {selected_region} ({selected_month_name})"
     )
 
-    st.plotly_chart(fig_line, use_container_width=True)
+    fig.update_layout(mapbox_style="open-street-map")
+    st.plotly_chart(fig)
