@@ -7,11 +7,29 @@ import calendar
 # Title and config
 st.set_page_config(layout="wide")
 #st.title("Environmental Monitoring App")
-st.markdown("""
-    <div style='background-color:#f0f2f6;padding:15px;border-radius:10px;border-left:5px solid #4A90E2'>
-        <h1 style='color:#333;'>Environmental Monitoring App</h1>
+st.markdown(
+    """
+    <style>
+        .title-box {
+            background-color: #f0f2f6;
+            padding: 20px;
+            border-left: 6px solid #4A90E2;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .title-text {
+            font-size: 30px;
+            color: #333333;
+            margin: 0;
+        }
+    </style>
+    <div class='title-box'>
+        <p class='title-text'>🌍 Environmental Monitoring App</p>
     </div>
-""", unsafe_allow_html=True)
+    """,
+    unsafe_allow_html=True
+)
+
 
 # Load data
 df = pd.read_csv("Sensors_data/air_quality_data.csv")
