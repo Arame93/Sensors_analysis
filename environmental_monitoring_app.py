@@ -65,15 +65,26 @@ all_vars = sorted(df["value_type"].dropna().unique())
 cols = st.sidebar.columns(3)
 selected_vars = [var for i, var in enumerate(all_vars) if cols[i % 3].checkbox(var)]
 
-# Filters
 with st.container():
-    col1, col2 = st.columns([1, 1])
-    selected_region = col1.selectbox("Select Region", regions)
-    selected_month_name = col2.selectbox("Select Month", month_names)
+    st.markdown("### 🔍 Filter Options")
 
-    st.markdown("#### Select Variables")
-    cols = st.columns(3)
-    selected_vars = [v for i, v in enumerate(expected_variables) if cols[i % 3].checkbox(v, key=v)]
+    # Region and Month side-by-side
+    col1, col2 = st.columns(2)
+    
+    regions = df["region"].dropna().unique()
+    selected_region = col1.selectbox("Select Region", sorted(regions))
+
+    month_numbers = sorted(df["month"].dropna().unique())
+    month_names = [calendar.month_name[int(m)] for m in month_numbers]
+    month_mapping = dict(zip(month_names, month_numbers))
+    selected_month_name = col2.selectbox("Select Month", month_names)
+    selected_month = month_mapping[selected_month_name]
+
+    # Variable checkboxes in 3 columns
+    st.markdown("#### Select Variables to Display")
+    all_vars = sorted(df["value_type"].dropna().unique())
+    var_cols = st.columns(3)
+    selected_vars = [var for i, var in enumerate(all_vars) if var_cols[i % 3].checkbox(var, key=var)]
 
 # Filter data
 filtered_df = df[
