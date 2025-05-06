@@ -111,8 +111,6 @@ if not region_avg.empty:
         title="Average Values by Region and Variable",
         labels={"value_type": "Variable", "value": "Average"}
     )
-else:
-    st.warning("No comparison data available.")
 
 # 5. Trend Detection
 st.header("📈 Trend Detection")
