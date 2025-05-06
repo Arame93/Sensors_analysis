@@ -17,8 +17,8 @@ df["date"] = df["timestamp"].dt.date
 df["hour"] = df["timestamp"].dt.hour
 df["month"] = df["timestamp"].dt.month
 df["value_type"] = df["value_type"].replace(
-    ['P2', 'humidity', 'temperature', 'P1', 'pressure', 'durP1', 'durP2', 'P10'],
-    ['PM2.5', 'Humidity', 'Temperature', 'PM10', 'Pressure', 'durPM10', 'durPM2.5', 'PM10']
+    ['P2', 'humidity', 'temperature', 'P1', 'pressure', 'durP1', 'durP2', 'P10', "noise_Leq"],
+    ['PM2.5', 'Humidity', 'Temperature', 'PM10', 'Pressure', 'durPM10', 'durPM2.5', 'PM10', "Noise_Leq"]
 )
 
 # Sidebar filters
@@ -53,21 +53,24 @@ pivot_df = filtered_df.pivot_table(
     aggfunc="mean"
 ).reset_index()
 
+available_vars = [var for var in selected_vars if var in pivot_df.columns]
+
+
 # 1. Descriptive Analysis
 st.header("Descriptive Analysis")
-daily_df = pivot_df[["date"] + selected_vars].dropna(how="all")
-daily_df = daily_df.groupby("date")[selected_vars].mean().rolling(window=3, min_periods=1).mean().reset_index()
+daily_df = pivot_df[["date"] + available_vars].dropna(how="all")
+daily_df = daily_df.groupby("date")[available_vars].mean().rolling(window=3, min_periods=1).mean().reset_index()
 daily_long = daily_df.melt(id_vars="date", var_name="Variable", value_name="Value")
-var_str = " + ".join(selected_vars)
+var_str = " + ".join(available_vars)
 fig_daily = px.line(daily_long, x="date", y="Value", color="Variable", title=f"Daily Average {var_str}")
 st.plotly_chart(fig_daily, use_container_width=True)
 
 # 2. Time Series Analysis
 st.header("Hourly Trends")
-hourly_df = pivot_df[["hour"] + selected_vars].dropna(how="all")
-hourly_df = hourly_df.groupby("hour")[selected_vars].mean().rolling(window=2, min_periods=1).mean().reset_index()
+hourly_df = pivot_df[["hour"] + available_vars].dropna(how="all")
+hourly_df = hourly_df.groupby("hour")[available_vars].mean().rolling(window=2, min_periods=1).mean().reset_index()
 hourly_long = hourly_df.melt(id_vars="hour", var_name="Variable", value_name="Value")
-var_str = " + ".join(selected_vars)
+var_str = " + ".join(available_vars)
 fig_hour = px.line(hourly_long, x="hour", y="Value", color="Variable", title=f"Hourly Average {var_str}")
 st.plotly_chart(fig_hour, use_container_width=True)
 
