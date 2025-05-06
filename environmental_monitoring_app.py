@@ -20,7 +20,7 @@ st.markdown("""
             margin-bottom: 20px;
         }
     </style>
-    <div class="main-title">2025 Air Quality Report</div>
+    <div class="main-title">Environmental Monitoring App</div>
 """, unsafe_allow_html=True)
 
 
