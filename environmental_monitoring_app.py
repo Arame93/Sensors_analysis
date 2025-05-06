@@ -9,7 +9,7 @@ st.set_page_config(layout="wide")
 st.title("Air Quality Explorer")
 
 # Load data
-df = pd.read_csv("Sensors_data/air_quality_data.csv")
+df = pd.read_csv("sensors_data.csv")
 
 # Preprocessing
 df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
@@ -33,9 +33,10 @@ month_mapping = dict(zip(month_names, month_numbers))
 selected_month_name = st.sidebar.selectbox("Select Month", month_names)
 selected_month = month_mapping[selected_month_name]
 
-# Variable selection
-variables = df["value_type"].dropna().unique()
-selected_vars = st.sidebar.multiselect("Select Variables", variables)
+# 3-column checkbox variable selector
+all_vars = df["value_type"].dropna().unique()
+cols = st.sidebar.columns(3)
+selected_vars = [var for i, var in enumerate(all_vars) if cols[i % 3].checkbox(var)]
 
 # Apply filters
 filtered_df = df[
@@ -44,7 +45,7 @@ filtered_df = df[
     (df["value_type"].isin(selected_vars))
 ]
 
-# Pivot data for easier analysis
+# Pivot data
 pivot_df = filtered_df.pivot_table(
     index=["timestamp", "date", "hour"],
     columns="value_type",
@@ -53,33 +54,28 @@ pivot_df = filtered_df.pivot_table(
 ).reset_index()
 
 # 1. Descriptive Analysis
-st.header("📊 Descriptive Analysis")
-
-if not pivot_df.empty:
-    for var in selected_vars:
-        st.subheader(f"Daily Average - {var}")
-        avg_by_day = pivot_df.groupby("date")[var].mean().reset_index()
-        st.line_chart(avg_by_day.set_index("date"))
+st.header("Descriptive Analysis")
+if not pivot_df.empty and selected_vars:
+    daily_df = pivot_df[["date"] + selected_vars].dropna(how="all")
+    daily_long = daily_df.melt(id_vars="date", value_vars=selected_vars, var_name="Variable", value_name="Value")
+    fig_daily = px.line(daily_long, x="date", y="Value", color="Variable", title="Daily Averages")
+    st.plotly_chart(fig_daily, use_container_width=True)
 else:
     st.warning("No data available for the selected filters.")
 
 # 2. Time Series Analysis
-st.header("⏱️ Hourly Trends")
-if not pivot_df.empty:
-    for var in selected_vars:
-        st.subheader(f"Hourly Average - {var}")
-        hourly_avg = pivot_df.groupby("hour")[var].mean().reset_index()
-        fig_hourly = px.line(hourly_avg, x="hour", y=var, title=f"{var} by Hour")
-        st.plotly_chart(fig_hourly)
+st.header("Hourly Trends")
+if not pivot_df.empty and selected_vars:
+    hourly_df = pivot_df[["hour"] + selected_vars].dropna(how="all")
+    hourly_long = hourly_df.melt(id_vars="hour", value_vars=selected_vars, var_name="Variable", value_name="Value")
+    fig_hour = px.line(hourly_long, x="hour", y="Value", color="Variable", title="Hourly Averages")
+    st.plotly_chart(fig_hour, use_container_width=True)
 else:
     st.warning("No data to show hourly trends.")
 
 # 3. Geospatial Air Quality Map
-st.header("🗺️ Geospatial Air Quality Map")
-
-# Join lat/lon from original filtered_df
+st.header("Geospatial Air Quality Map")
 location_avg = filtered_df.groupby(["lat", "lon"])[["value"]].mean().reset_index()
-
 if not location_avg.empty:
     st.pydeck_chart(pdk.Deck(
         map_style="mapbox://styles/mapbox/light-v9",
@@ -103,7 +99,7 @@ else:
     st.warning("No map data to display.")
 
 # 4. Comparative Analysis
-st.header("📍 Regional Comparison")
+st.header("Regional Comparison")
 region_avg = df[df["value_type"].isin(selected_vars)].groupby("region")["value"].mean().reset_index()
 if not region_avg.empty:
     fig_compare = px.bar(region_avg, x="region", y="value", title="Average Value by Region")
@@ -112,17 +108,17 @@ else:
     st.warning("No comparison data available.")
 
 # 5. Trend Detection
-st.header("📈 Trend Detection")
-if not pivot_df.empty:
-    for var in selected_vars:
-        rolling = pivot_df.set_index("timestamp")[var].resample("D").mean().rolling(window=7).mean()
-        st.subheader(f"{var} - 7 Day Rolling Average")
-        st.line_chart(rolling)
+st.header("Trend Detection")
+if not pivot_df.empty and selected_vars:
+    trend_df = pivot_df[["timestamp"] + selected_vars].set_index("timestamp").resample("D").mean().rolling(window=7).mean().reset_index()
+    trend_long = trend_df.melt(id_vars="timestamp", value_vars=selected_vars, var_name="Variable", value_name="Value")
+    fig_trend = px.line(trend_long, x="timestamp", y="Value", color="Variable", title="7-Day Rolling Averages")
+    st.plotly_chart(fig_trend, use_container_width=True)
 else:
     st.warning("Not enough data to detect trends.")
 
 # 6. Anomaly Detection
-st.header("🚨 Anomaly Detection")
+st.header("Anomaly Detection")
 if not filtered_df.empty:
     for var in selected_vars:
         sub_df = filtered_df[filtered_df["value_type"] == var]
