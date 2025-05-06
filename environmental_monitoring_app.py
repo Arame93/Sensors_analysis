@@ -67,7 +67,7 @@ st.header("Hourly Trends")
 hourly_df = pivot_df[["hour"] + selected_vars].dropna(how="all")
 hourly_df = hourly_df.groupby("hour")[selected_vars].mean().rolling(window=2, min_periods=1).mean().reset_index()
 hourly_long = hourly_df.melt(id_vars="hour", var_name="Variable", value_name="Value")
-fig_hour = px.line(hourly_long, x="hour", y="Value", color="Variable", title="Smoothed Hourly Averages")
+fig_hour = px.line(hourly_long, x="hour", y="Value", color="Variable", title="Hourly Average")
 st.plotly_chart(fig_hour, use_container_width=True)
 
 # 3. Geospatial Air Quality Map
