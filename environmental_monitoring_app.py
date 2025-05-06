@@ -38,6 +38,13 @@ all_vars = df["value_type"].dropna().unique()
 cols = st.sidebar.columns(3)
 selected_vars = [var for i, var in enumerate(all_vars) if cols[i % 3].checkbox(var)]
 
+
+# Variables (multicolumn checkboxes)
+expected_variables = sorted(df["value_type"].dropna().unique())
+cols = st.sidebar.columns(3)
+selected_vars = [v for i, v in enumerate(expected_variables) if cols[i % 3].checkbox(v)]
+
+
 # Apply filters
 filtered_df = df[
     (df["region"] == selected_region) &
@@ -58,21 +65,33 @@ available_vars = [var for var in selected_vars if var in pivot_df.columns]
 
 # 1. Descriptive Analysis
 st.header("Descriptive Analysis")
-daily_df = pivot_df[["date"] + available_vars].dropna(how="all")
-daily_df = daily_df.groupby("date")[available_vars].mean().rolling(window=3, min_periods=1).mean().reset_index()
-daily_long = daily_df.melt(id_vars="date", var_name="Variable", value_name="Value")
-var_str = " + ".join(available_vars)
-fig_daily = px.line(daily_long, x="date", y="Value", color="Variable", title=f"Daily Average {var_str}")
-st.plotly_chart(fig_daily, use_container_width=True)
+if selected_vars:
+    daily_df = pivot_df.groupby("date")[selected_vars].mean().reset_index()
+    fig = px.line(
+        daily_df,
+        x="date",
+        y=selected_vars,
+        title=f"Daily Average of {' + '.join(selected_vars)} in {selected_region} ({selected_month_name})",
+        labels={"value": "Average Value", "variable": "Variable"},
+    )
+    st.plotly_chart(fig, use_container_width=True)
+else:
+    st.warning("Please select at least one variable to display daily trends.")
 
 # 2. Time Series Analysis
 st.header("Hourly Trends")
-hourly_df = pivot_df[["hour"] + available_vars].dropna(how="all")
-hourly_df = hourly_df.groupby("hour")[available_vars].mean().rolling(window=2, min_periods=1).mean().reset_index()
-hourly_long = hourly_df.melt(id_vars="hour", var_name="Variable", value_name="Value")
-var_str = " + ".join(available_vars)
-fig_hour = px.line(hourly_long, x="hour", y="Value", color="Variable", title=f"Hourly Average {var_str}")
-st.plotly_chart(fig_hour, use_container_width=True)
+if selected_vars:
+    hourly_df = pivot_df.groupby("hour")[selected_vars].mean().reset_index()
+    fig_hourly = px.line(
+        hourly_df,
+        x="hour",
+        y=selected_vars,
+        title=f"Hourly Average of {' + '.join(selected_vars)}",
+        labels={"value": "Average Value", "variable": "Variable"},
+    )
+    st.plotly_chart(fig_hourly, use_container_width=True)
+else:
+    st.warning("Please select at least one variable to display hourly trends.")
 
 # 3. Geospatial Air Quality Map
 st.header("Geospatial Air Quality Map")
@@ -100,53 +119,53 @@ else:
     st.warning("No map data to display.")
 
 # 4. Comparative Analysis
-# 4. Comparative Analysis
-st.header("Regional Comparison")
+compare_df = df[df["value_type"].isin(selected_vars)]
+region_avg = compare_df.groupby(["region", "value_type"])["value"].mean().reset_index()
 
-if selected_vars:
-    region_avg = df[df["value_type"].isin(selected_vars)].groupby(["region", "value_type"])["value"].mean().reset_index()
-    if not region_avg.empty:
-        fig_compare = px.bar(
-            region_avg,
-            x="region",
-            y="value",
-            color="value_type",
-            barmode="group",
-            title="Average Values by Region",
-            labels={"value_type": "Variable", "value": "Average"}
-        )
-        st.plotly_chart(fig_compare, use_container_width=True)
-    else:
-        st.warning("No comparison data available for the selected variables.")
+if not region_avg.empty:
+    fig_compare = px.bar(
+        region_avg,
+        x="region",
+        y="value",
+        color="value_type",
+        barmode="group",
+        title="📊 Average Values by Region",
+        labels={"value": "Average", "value_type": "Variable"},
+    )
+    st.plotly_chart(fig_compare, use_container_width=True)
+else:
+    st.warning("No regional comparison data available.")
 else:
     st.info("Select at least one variable to see regional comparison.")
     
 # 5. Trend Detection
 st.header("Trend Detection")
-if not pivot_df.empty and selected_vars:
-    trend_df = pivot_df[["timestamp"] + selected_vars].set_index("timestamp").resample("D").mean().rolling(window=7).mean().reset_index()
-    trend_long = trend_df.melt(id_vars="timestamp", value_vars=selected_vars, var_name="Variable", value_name="Value")
-    fig_trend = px.line(trend_long, x="timestamp", y="Value", color="Variable", title="7-Day Rolling Averages")
-    st.plotly_chart(fig_trend, use_container_width=True)
+if selected_vars and not pivot_df.empty:
+    pivot_df.set_index("timestamp", inplace=True)
+    for var in selected_vars:
+        if var in pivot_df.columns:
+            rolling = pivot_df[var].resample("D").mean().rolling(window=7).mean()
+            st.subheader(f"{var} - 7 Day Rolling Average")
+            st.line_chart(rolling)
+    pivot_df.reset_index(inplace=True)
 else:
-    st.warning("Not enough data to detect trends.")
+    st.warning("No data for trend detection.")
+
 
 # 6. Anomaly Detection
 st.header("Anomaly Detection")
-st.header("Anomaly Detection")
-if not filtered_df.empty:
-    anomaly_df = filtered_df[filtered_df["value_type"].isin(selected_vars)]
+if not filtered_df.empty and selected_vars:
     fig_anomaly = px.box(
-        anomaly_df,
+        filtered_df[filtered_df["value_type"].isin(selected_vars)],
         x="value_type",
         y="value",
+        title="Boxplot of Selected Variables (Detect Outliers)",
         points="outliers",
-        title="Anomaly Detection via Boxplot",
-        labels={"value_type": "Variable", "value": "Sensor Value"}
+        labels={"value": "Value", "value_type": "Variable"}
     )
     st.plotly_chart(fig_anomaly, use_container_width=True)
 else:
-    st.warning("No anomaly data to show.")
+    st.warning("No data for anomaly detection.")
 
 # 7. Correlation Placeholder
 st.header("🌦️ Weather Correlation")
