@@ -66,7 +66,7 @@ df["value_type"] = df["value_type"].replace(rename_map)
 #selected_vars = [var for i, var in enumerate(all_vars) if cols[i % 3].checkbox(var)]
 
 with st.container():
-    st.markdown("### 🔍 Filter Options")
+    #st.markdown("### Filter Options")
 
     # Region and Month side-by-side
     col1, col2 = st.columns(2)
