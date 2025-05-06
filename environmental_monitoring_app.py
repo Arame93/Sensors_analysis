@@ -4,6 +4,41 @@ import plotly.express as px
 import pydeck as pdk
 import calendar
 
+# Custom CSS to style the app layout
+st.markdown("""
+    <style>
+        /* Set the overall background color */
+        body {
+            background-color: #f0f2f6;
+        }
+        .main > div {
+            padding: 30px;
+        }
+
+        /* Container frame styling */
+        .app-container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Title styling (optional) */
+        .app-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+
+st.markdown("<div class='app-container'>", unsafe_allow_html=True)
+
 # Title and config
 st.set_page_config(layout="wide")
 #st.title("Environmental Monitoring App")
@@ -194,6 +229,9 @@ else:
 # 7. Correlation placeholder
 st.header("🌦️ Weather Correlation")
 st.info("Add weather data to perform correlation analysis with temperature, humidity, etc.")
+
+st.markdown("</div>", unsafe_allow_html=True)
+
 
 # Footer
 st.caption("Built with Streamlit and openAFRICA data")
