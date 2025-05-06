@@ -7,28 +7,21 @@ import calendar
 # Title and config
 st.set_page_config(layout="wide")
 #st.title("Environmental Monitoring App")
-st.markdown(
-    """
+st.markdown("""
     <style>
-        .title-box {
-            background-color: #f0f2f6;
+        .main-title {
+            background-color: #28a745;
             padding: 20px;
-            border-left: 6px solid #4A90E2;
-            border-radius: 8px;
+            border-radius: 10px;
+            text-align: center;
+            color: white;
+            font-size: 36px;
+            font-weight: bold;
             margin-bottom: 20px;
         }
-        .title-text {
-            font-size: 30px;
-            color: #333333;
-            margin: 0;
-        }
     </style>
-    <div class='title-box'>
-        <p class='title-text'> Environmental Monitoring App</p>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+    <div class="main-title">2025 Air Quality Report</div>
+""", unsafe_allow_html=True)
 
 
 # Load data
