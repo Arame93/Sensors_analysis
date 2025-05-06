@@ -68,7 +68,7 @@ pivot_df = filtered_df.pivot_table(
 available_vars = [var for var in selected_vars if var in pivot_df.columns]
 
 # 1. Descriptive Daily Analysis
-st.header("Descriptive Analysis")
+#st.header("Descriptive Analysis")
 if available_vars:
     daily_df = pivot_df.groupby("date")[available_vars].mean().reset_index()
     fig = px.line(
@@ -83,7 +83,7 @@ else:
     st.warning("Please select at least one variable to display daily trends.")
 
 # 2. Hourly Trends
-st.header("Hourly Trends")
+#st.header("Hourly Trends")
 if available_vars:
     hourly_df = pivot_df.groupby("hour")[available_vars].mean().reset_index()
     fig_hourly = px.line(
@@ -98,7 +98,7 @@ else:
     st.warning("Please select at least one variable to display hourly trends.")
 
 # 3. Geospatial Map
-st.header("Geospatial Air Quality Map")
+#st.header("Geospatial Air Quality Map")
 location_avg = filtered_df.groupby(["lat", "lon"])[["value"]].mean().reset_index()
 if not location_avg.empty:
     st.pydeck_chart(pdk.Deck(
@@ -123,7 +123,7 @@ else:
     st.warning("No map data to display.")
 
 # 4. Regional Comparison (independent of region/month filters)
-st.header("Regional Comparison")
+#st.header("Regional Comparison")
 compare_df = df[df["value_type"].isin(selected_vars)]
 region_avg = compare_df.groupby(["region", "value_type"])["value"].mean().reset_index()
 if not region_avg.empty:
@@ -140,21 +140,21 @@ if not region_avg.empty:
 else:
     st.warning("No regional comparison data available.")
 
-# 5. Trend Detection (7-day rolling)
-st.header("Trend Detection")
-if available_vars and not pivot_df.empty:
-    pivot_df.set_index("timestamp", inplace=True)
-    for var in available_vars:
-        if var in pivot_df.columns:
-            rolling = pivot_df[var].resample("D").mean().rolling(window=7).mean()
-            st.subheader(f"{var} - 7 Day Rolling Average")
-            st.line_chart(rolling)
-    pivot_df.reset_index(inplace=True)
-else:
-    st.warning("No data for trend detection.")
+## 5. Trend Detection (7-day rolling)
+#st.header("Trend Detection")
+#if available_vars and not pivot_df.empty:
+    #pivot_df.set_index("timestamp", inplace=True)
+    #for var in available_vars:
+        #if var in pivot_df.columns:
+            #rolling = pivot_df[var].resample("D").mean().rolling(window=7).mean()
+            #st.subheader(f"{var} - 7 Day Rolling Average")
+            #st.line_chart(rolling)
+    #pivot_df.reset_index(inplace=True)
+#else:
+    #st.warning("No data for trend detection.")
 
 # 6. Anomaly Detection (Boxplot)
-st.header("Anomaly Detection")
+#st.header("Anomaly Detection")
 if not filtered_df.empty and available_vars:
     fig_anomaly = px.box(
         filtered_df[filtered_df["value_type"].isin(available_vars)],
