@@ -47,7 +47,7 @@ filtered_df = df[
 
 # Pivot data
 pivot_df = filtered_df.pivot_table(
-    index=["timestamp", "date", "hour", "Pressure"],
+    index=["timestamp", "date", "hour"],
     columns="value_type",
     values="value",
     aggfunc="mean"
@@ -67,7 +67,8 @@ st.header("Hourly Trends")
 hourly_df = pivot_df[["hour"] + selected_vars].dropna(how="all")
 hourly_df = hourly_df.groupby("hour")[selected_vars].mean().rolling(window=2, min_periods=1).mean().reset_index()
 hourly_long = hourly_df.melt(id_vars="hour", var_name="Variable", value_name="Value")
-fig_hour = px.line(hourly_long, x="hour", y="Value", color="Variable", title="Hourly Average")
+var_str = " + ".join(selected_vars)
+fig_hour = px.line(hourly_long, x="hour", y="Value", color="Variable", title=f"Hourly Average {var_str}")
 st.plotly_chart(fig_hour, use_container_width=True)
 
 # 3. Geospatial Air Quality Map
@@ -96,19 +97,27 @@ else:
     st.warning("No map data to display.")
 
 # 4. Comparative Analysis
+# 4. Comparative Analysis
 st.header("Regional Comparison")
-region_avg = df[df["value_type"].isin(selected_vars)].groupby(["region", "value_type"])["value"].mean().reset_index()
-if not region_avg.empty:
-    fig_compare = px.bar(
-        region_avg,
-        x="region",
-        y="value",
-        color="value_type",
-        barmode="group",
-        title="Average Values by Region and Variable",
-        labels={"value_type": "Variable", "value": "Average"}
-    )
 
+if selected_vars:
+    region_avg = df[df["value_type"].isin(selected_vars)].groupby(["region", "value_type"])["value"].mean().reset_index()
+    if not region_avg.empty:
+        fig_compare = px.bar(
+            region_avg,
+            x="region",
+            y="value",
+            color="value_type",
+            barmode="group",
+            title="Average Values by Region",
+            labels={"value_type": "Variable", "value": "Average"}
+        )
+        st.plotly_chart(fig_compare, use_container_width=True)
+    else:
+        st.warning("No comparison data available for the selected variables.")
+else:
+    st.info("Select at least one variable to see regional comparison.")
+    
 # 5. Trend Detection
 st.header("Trend Detection")
 if not pivot_df.empty and selected_vars:
