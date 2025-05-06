@@ -83,13 +83,13 @@ pivot_df = filtered_df.pivot_table(
 
 available_vars = [var for var in selected_vars if var in pivot_df.columns]
 
-st.subheader("Daily and Hourly Averages")
+#st.subheader("Daily and Hourly Averages")
 col1, col2 = st.columns(2)
 
 # 1. Descriptive Daily Analysis
 #st.header("Descriptive Analysis")
 with col1:
-    st.markdown("#### Daily Average")
+    st.markdown("##### Daily Average")
     if available_vars:
         daily_df = pivot_df.groupby("date")[available_vars].mean().reset_index()
         fig = px.line(
@@ -103,7 +103,7 @@ with col1:
     else:
         st.warning("Please select at least one variable to display daily trends.")
 with col2:
-    st.markdown("#### Hourly Average")
+    st.markdown("##### Hourly Average")
 
 # 2. Hourly Trends
 #st.header("Hourly Trends")
