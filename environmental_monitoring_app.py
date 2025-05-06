@@ -55,13 +55,11 @@ pivot_df = filtered_df.pivot_table(
 
 # 1. Descriptive Analysis
 st.header("Descriptive Analysis")
-if not pivot_df.empty and selected_vars:
-    daily_df = pivot_df[["date"] + selected_vars].dropna(how="all")
-    daily_long = daily_df.melt(id_vars="date", value_vars=selected_vars, var_name="Variable", value_name="Value")
-    fig_daily = px.line(daily_long, x="date", y="Value", color="Variable", title="Daily Averages")
-    st.plotly_chart(fig_daily, use_container_width=True)
-else:
-    st.warning("No data available for the selected filters.")
+daily_df = pivot_df[["date"] + selected_vars].dropna(how="all")
+daily_df = daily_df.groupby("date")[selected_vars].mean().rolling(window=3, min_periods=1).mean().reset_index()
+daily_long = daily_df.melt(id_vars="date", var_name="Variable", value_name="Value")
+fig_daily = px.line(daily_long, x="date", y="Value", color="Variable", title="Smoothed Daily Averages")
+st.plotly_chart(fig_daily, use_container_width=True)
 
 # 2. Time Series Analysis
 st.header("⏱️ Hourly Trends")
