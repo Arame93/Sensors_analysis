@@ -83,17 +83,14 @@ else:
 # Line chart: Daily variation
 # ---------------------------
 if selected_vars:
-    daily_avg = filtered_df.groupby("date")[selected_vars].mean().reset_index()
+    daily_avg = filtered_df.groupby("day")[selected_vars].mean().reset_index()
 
-    if daily_avg.empty or daily_avg[selected_vars].isnull().all().all():
-        st.warning("No valid daily data available for the selected filters.")
-    else:
-        st.subheader("📈 Daily Variation of Selected Variables")
-        fig_line = px.line(
+    fig_line = px.line(
             daily_avg,
-            x="date",
+            x="day",
             y=selected_vars,
-            labels={"value": "Average Value", "date": "Date"},
-            title=f"Daily Trends for Selected Variables in {selected_region} ({selected_month_name})"
-        )
-        st.plotly_chart(fig_line, use_container_width=True)
+            labels={"value": "Average Value", "day": "Day of Week"},
+            title=f"Average by Day of Week for {selected_region} ({selected_month_name})"
+    )
+
+    st.plotly_chart(fig_line, use_container_width=True)
