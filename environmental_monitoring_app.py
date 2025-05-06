@@ -60,6 +60,11 @@ month_mapping = dict(zip(month_names, month_numbers))
 selected_month_name = st.sidebar.selectbox("Select Month", month_names)
 selected_month = month_mapping[selected_month_name]
 
+# 3-column checkbox for variables
+all_vars = sorted(df["value_type"].dropna().unique())
+cols = st.sidebar.columns(3)
+selected_vars = [var for i, var in enumerate(all_vars) if cols[i % 3].checkbox(var)]
+
 # Filters
 with st.container():
     col1, col2 = st.columns([1, 1])
@@ -69,12 +74,6 @@ with st.container():
     st.markdown("#### Select Variables")
     cols = st.columns(3)
     selected_vars = [v for i, v in enumerate(expected_variables) if cols[i % 3].checkbox(v, key=v)]
-
-
-# 3-column checkbox for variables
-all_vars = sorted(df["value_type"].dropna().unique())
-cols = st.sidebar.columns(3)
-selected_vars = [var for i, var in enumerate(all_vars) if cols[i % 3].checkbox(var)]
 
 # Filter data
 filtered_df = df[
