@@ -83,35 +83,42 @@ pivot_df = filtered_df.pivot_table(
 
 available_vars = [var for var in selected_vars if var in pivot_df.columns]
 
+st.subheader("Daily and Hourly Averages")
+col1, col2 = st.columns(2)
+
 # 1. Descriptive Daily Analysis
 #st.header("Descriptive Analysis")
-if available_vars:
-    daily_df = pivot_df.groupby("date")[available_vars].mean().reset_index()
-    fig = px.line(
-        daily_df,
-        x="date",
-        y=available_vars,
-        title=f"Daily Average of {' + '.join(available_vars)} in {selected_region} ({selected_month_name})",
-        labels={"value": "Average Value", "variable": "Variable"},
-    )
-    st.plotly_chart(fig, use_container_width=True)
-else:
-    st.warning("Please select at least one variable to display daily trends.")
+with col1:
+    st.markdown("#### Daily Average")
+    if available_vars:
+        daily_df = pivot_df.groupby("date")[available_vars].mean().reset_index()
+        fig = px.line(
+            daily_df,
+            x="date",
+            y=available_vars,
+            title=f"Daily Average of {' + '.join(available_vars)} in {selected_region} ({selected_month_name})",
+            labels={"value": "Average Value", "variable": "Variable"},
+        )
+        st.plotly_chart(fig, use_container_width=True)
+    else:
+        st.warning("Please select at least one variable to display daily trends.")
+with col2:
+    st.markdown("#### Hourly Average")
 
 # 2. Hourly Trends
 #st.header("Hourly Trends")
-if available_vars:
-    hourly_df = pivot_df.groupby("hour")[available_vars].mean().reset_index()
-    fig_hourly = px.line(
-        hourly_df,
-        x="hour",
-        y=available_vars,
-        title=f"Hourly Average of {' + '.join(available_vars)}",
-        labels={"value": "Average Value", "variable": "Variable"},
-    )
-    st.plotly_chart(fig_hourly, use_container_width=True)
-else:
-    st.warning("Please select at least one variable to display hourly trends.")
+    if available_vars:
+        hourly_df = pivot_df.groupby("hour")[available_vars].mean().reset_index()
+        fig_hourly = px.line(
+            hourly_df,
+            x="hour",
+            y=available_vars,
+            title=f"Hourly Average of {' + '.join(available_vars)}",
+            labels={"value": "Average Value", "variable": "Variable"},
+        )
+        st.plotly_chart(fig_hourly, use_container_width=True)
+    else:
+        st.warning("Please select at least one variable to display hourly trends.")
 
 # 3. Geospatial Map
 #st.header("Geospatial Air Quality Map")
