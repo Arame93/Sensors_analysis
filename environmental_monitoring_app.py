@@ -58,6 +58,7 @@ st.markdown("""
     <div class="main-title">Environmental Monitoring App</div>
 """, unsafe_allow_html=True)
 
+st.markdown("</div>", unsafe_allow_html=True)
 
 # Load data
 df = pd.read_csv("Sensors_data/air_quality_data.csv")
