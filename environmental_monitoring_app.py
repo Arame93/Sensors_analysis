@@ -135,8 +135,9 @@ if not region_avg.empty:
     st.plotly_chart(fig_compare, use_container_width=True)
 else:
     st.warning("No regional comparison data available.")
-else:
-    st.info("Select at least one variable to see regional comparison.")
+
+#else:
+    #st.info("Select at least one variable to see regional comparison.")
     
 # 5. Trend Detection
 st.header("Trend Detection")
