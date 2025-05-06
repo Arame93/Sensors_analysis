@@ -7,7 +7,7 @@ import calendar
 # Title and config
 st.set_page_config(layout="wide")
 #st.title("Environmental Monitoring App")
-st.markdown(
+st.title((st.markdown(
     """
     <style>
         .title-box {
@@ -24,11 +24,11 @@ st.markdown(
         }
     </style>
     <div class='title-box'>
-        <p class='title-text'>🌍 Environmental Monitoring App</p>
+        <p class='title-text'> Environmental Monitoring App</p>
     </div>
     """,
     unsafe_allow_html=True
-)
+))
 
 
 # Load data
