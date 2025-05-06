@@ -47,7 +47,7 @@ filtered_df = df[
 
 # Pivot data
 pivot_df = filtered_df.pivot_table(
-    index=["timestamp", "date", "hour"],
+    index=["timestamp", "date", "hour", "Pressure"],
     columns="value_type",
     values="value",
     aggfunc="mean"
