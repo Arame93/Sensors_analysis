@@ -62,14 +62,12 @@ fig_daily = px.line(daily_long, x="date", y="Value", color="Variable", title="Da
 st.plotly_chart(fig_daily, use_container_width=True)
 
 # 2. Time Series Analysis
-st.header("⏱️ Hourly Trends")
-if not pivot_df.empty and selected_vars:
-    hourly_df = pivot_df[["hour"] + selected_vars].dropna(how="all")
-    hourly_long = hourly_df.melt(id_vars="hour", value_vars=selected_vars, var_name="Variable", value_name="Value")
-    fig_hour = px.line(hourly_long, x="hour", y="Value", color="Variable", title="Hourly Averages")
-    st.plotly_chart(fig_hour, use_container_width=True)
-else:
-    st.warning("No data to show hourly trends.")
+st.header("Hourly Trends")
+hourly_df = pivot_df[["hour"] + selected_vars].dropna(how="all")
+hourly_df = hourly_df.groupby("hour")[selected_vars].mean().rolling(window=2, min_periods=1).mean().reset_index()
+hourly_long = hourly_df.melt(id_vars="hour", var_name="Variable", value_name="Value")
+fig_hour = px.line(hourly_long, x="hour", y="Value", color="Variable", title="Smoothed Hourly Averages")
+st.plotly_chart(fig_hour, use_container_width=True)
 
 # 3. Geospatial Air Quality Map
 st.header("Geospatial Air Quality Map")
@@ -111,7 +109,7 @@ if not region_avg.empty:
     )
 
 # 5. Trend Detection
-st.header("📈 Trend Detection")
+st.header("Trend Detection")
 if not pivot_df.empty and selected_vars:
     trend_df = pivot_df[["timestamp"] + selected_vars].set_index("timestamp").resample("D").mean().rolling(window=7).mean().reset_index()
     trend_long = trend_df.melt(id_vars="timestamp", value_vars=selected_vars, var_name="Variable", value_name="Value")
@@ -122,16 +120,18 @@ else:
 
 # 6. Anomaly Detection
 st.header("Anomaly Detection")
+st.header("Anomaly Detection")
 if not filtered_df.empty:
-    for var in selected_vars:
-        sub_df = filtered_df[filtered_df["value_type"] == var]
-        q3 = sub_df["value"].quantile(0.75)
-        iqr = q3 - sub_df["value"].quantile(0.25)
-        threshold = q3 + 1.5 * iqr
-        anomalies = sub_df[sub_df["value"] > threshold]
-        st.subheader(f"{var} Anomalies")
-        st.write(f"Detected {len(anomalies)} anomalies")
-        st.dataframe(anomalies[["timestamp", "value", "region"]].sort_values("value", ascending=False))
+    anomaly_df = filtered_df[filtered_df["value_type"].isin(selected_vars)]
+    fig_anomaly = px.box(
+        anomaly_df,
+        x="value_type",
+        y="value",
+        points="outliers",
+        title="Anomaly Detection via Boxplot",
+        labels={"value_type": "Variable", "value": "Sensor Value"}
+    )
+    st.plotly_chart(fig_anomaly, use_container_width=True)
 else:
     st.warning("No anomaly data to show.")
 
