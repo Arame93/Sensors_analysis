@@ -47,23 +47,23 @@ rename_map = {
 }
 df["value_type"] = df["value_type"].replace(rename_map)
 
-# Sidebar filters
-st.sidebar.header("Filters")
+## Sidebar filters
+#st.sidebar.header("Filters")
 
-regions = df["region"].dropna().unique()
-selected_region = st.sidebar.selectbox("Select Region", sorted(regions))
+#regions = df["region"].dropna().unique()
+#selected_region = st.sidebar.selectbox("Select Region", sorted(regions))
 
-# Month selector
-month_numbers = sorted(df["month"].dropna().unique())
-month_names = [calendar.month_name[int(m)] for m in month_numbers]
-month_mapping = dict(zip(month_names, month_numbers))
-selected_month_name = st.sidebar.selectbox("Select Month", month_names)
-selected_month = month_mapping[selected_month_name]
+## Month selector
+#month_numbers = sorted(df["month"].dropna().unique())
+#month_names = [calendar.month_name[int(m)] for m in month_numbers]
+#month_mapping = dict(zip(month_names, month_numbers))
+#selected_month_name = st.sidebar.selectbox("Select Month", month_names)
+#selected_month = month_mapping[selected_month_name]
 
-# 3-column checkbox for variables
-all_vars = sorted(df["value_type"].dropna().unique())
-cols = st.sidebar.columns(3)
-selected_vars = [var for i, var in enumerate(all_vars) if cols[i % 3].checkbox(var)]
+## 3-column checkbox for variables
+#all_vars = sorted(df["value_type"].dropna().unique())
+#cols = st.sidebar.columns(3)
+#selected_vars = [var for i, var in enumerate(all_vars) if cols[i % 3].checkbox(var)]
 
 with st.container():
     st.markdown("### 🔍 Filter Options")
