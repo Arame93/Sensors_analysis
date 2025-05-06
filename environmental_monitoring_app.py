@@ -81,7 +81,7 @@ with st.container():
     selected_month = month_mapping[selected_month_name]
 
     # Variable checkboxes in 3 columns
-    st.markdown("#### Select Variables to Display")
+    st.markdown("###### Select variables")
     all_vars = sorted(df["value_type"].dropna().unique())
     var_cols = st.columns(3)
     selected_vars = [var for i, var in enumerate(all_vars) if var_cols[i % 3].checkbox(var, key=f"var_{var}")]
