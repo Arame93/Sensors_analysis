@@ -47,6 +47,17 @@ rename_map = {
 }
 df["value_type"] = df["value_type"].replace(rename_map)
 
+
+# Filters
+with st.container():
+    col1, col2 = st.columns([1, 1])
+    selected_region = col1.selectbox("Select Region", regions)
+    selected_month_name = col2.selectbox("Select Month", month_names)
+
+    st.markdown("#### Select Variables")
+    cols = st.columns(3)
+    selected_vars = [v for i, v in enumerate(expected_variables) if cols[i % 3].checkbox(v, key=v)]
+
 # Sidebar filters
 st.sidebar.header("Filters")
 
