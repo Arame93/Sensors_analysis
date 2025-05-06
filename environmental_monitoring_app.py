@@ -7,7 +7,7 @@ import calendar
 # Title and config
 st.set_page_config(layout="wide")
 #st.title("Environmental Monitoring App")
-st.title((st.markdown(
+st.markdown(
     """
     <style>
         .title-box {
@@ -28,7 +28,7 @@ st.title((st.markdown(
     </div>
     """,
     unsafe_allow_html=True
-))
+)
 
 
 # Load data
