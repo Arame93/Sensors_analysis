@@ -141,7 +141,7 @@ with col2:
         st.warning("Please select at least one variable to display hourly trends.")
 
 # 3. Geospatial Map
-#st.header("Geospatial Air Quality Map")
+-st.header("Air Quality Map")
 location_avg = filtered_df.groupby(["lat", "lon"])[["value"]].mean().reset_index()
 if not location_avg.empty:
     st.pydeck_chart(pdk.Deck(
