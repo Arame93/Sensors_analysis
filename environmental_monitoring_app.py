@@ -165,8 +165,36 @@ if not location_avg.empty:
 else:
     st.warning("No map data to display.")
 
-# 4. Regional Comparison (independent of region/month filters)
-#st.header("Regional Comparison")
+## 5. Trend Detection (7-day rolling)
+#st.header("Trend Detection")
+#if available_vars and not pivot_df.empty:
+    #pivot_df.set_index("timestamp", inplace=True)
+    #for var in available_vars:
+        #if var in pivot_df.columns:
+            #rolling = pivot_df[var].resample("D").mean().rolling(window=7).mean()
+            #st.subheader(f"{var} - 7 Day Rolling Average")
+            #st.line_chart(rolling)
+    #pivot_df.reset_index(inplace=True)
+#else:
+    #st.warning("No data for trend detection.")
+
+# 4. Anomaly Detection (Boxplot)
+#st.header("Anomaly Detection")
+if not filtered_df.empty and available_vars:
+    fig_anomaly = px.box(
+        filtered_df[filtered_df["value_type"].isin(available_vars)],
+        x="value_type",
+        y="value",
+        title="Anomaly Detection (Detect Outliers)",
+        points="outliers",
+        labels={"value": "Value", "value_type": "Variable"}
+    )
+    st.plotly_chart(fig_anomaly, use_container_width=True)
+else:
+    st.warning("No data for anomaly detection.")
+
+# 5. Regional Comparison (independent of region/month filters)
+st.header("Regional Comparison")
 compare_df = df[df["value_type"].isin(selected_vars)]
 region_avg = compare_df.groupby(["region", "value_type"])["value"].mean().reset_index()
 if not region_avg.empty:
@@ -183,33 +211,6 @@ if not region_avg.empty:
 else:
     st.warning("No regional comparison data available.")
 
-## 5. Trend Detection (7-day rolling)
-#st.header("Trend Detection")
-#if available_vars and not pivot_df.empty:
-    #pivot_df.set_index("timestamp", inplace=True)
-    #for var in available_vars:
-        #if var in pivot_df.columns:
-            #rolling = pivot_df[var].resample("D").mean().rolling(window=7).mean()
-            #st.subheader(f"{var} - 7 Day Rolling Average")
-            #st.line_chart(rolling)
-    #pivot_df.reset_index(inplace=True)
-#else:
-    #st.warning("No data for trend detection.")
-
-# 6. Anomaly Detection (Boxplot)
-#st.header("Anomaly Detection")
-if not filtered_df.empty and available_vars:
-    fig_anomaly = px.box(
-        filtered_df[filtered_df["value_type"].isin(available_vars)],
-        x="value_type",
-        y="value",
-        title="Anomaly Detection (Detect Outliers)",
-        points="outliers",
-        labels={"value": "Value", "value_type": "Variable"}
-    )
-    st.plotly_chart(fig_anomaly, use_container_width=True)
-else:
-    st.warning("No data for anomaly detection.")
 
 # 7. Correlation placeholder
 st.header("🌦️ Weather Correlation")
