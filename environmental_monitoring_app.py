@@ -107,7 +107,7 @@ available_vars = [var for var in selected_vars if var in pivot_df.columns]
 col1, col2 = st.columns(2)
 
 # 1. Descriptive Daily Analysis
-#st.header("Descriptive Analysis")
+st.header("Daily and hourly Trends")
 with col1:
     st.markdown("##### Daily Average")
     if available_vars:
@@ -179,7 +179,7 @@ with col2:
     #st.warning("No data for trend detection.")
 
 # 4. Anomaly Detection (Boxplot)
-#st.header("Anomaly Detection")
+st.header("Anomaly Detection")
 if not filtered_df.empty and available_vars:
     fig_anomaly = px.box(
         filtered_df[filtered_df["value_type"].isin(available_vars)],
