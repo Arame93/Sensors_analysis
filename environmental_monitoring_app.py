@@ -141,29 +141,29 @@ with col2:
         st.warning("Please select at least one variable to display hourly trends.")
 
 # 3. Geospatial Map
--st.header("Air Quality Map")
-location_avg = filtered_df.groupby(["lat", "lon"])[["value"]].mean().reset_index()
-if not location_avg.empty:
-    st.pydeck_chart(pdk.Deck(
-        map_style="mapbox://styles/mapbox/light-v9",
-        initial_view_state=pdk.ViewState(
-            latitude=location_avg["lat"].mean(),
-            longitude=location_avg["lon"].mean(),
-            zoom=10,
-            pitch=50,
-        ),
-        layers=[
-            pdk.Layer(
-                "ScatterplotLayer",
-                data=location_avg,
-                get_position='[lon, lat]',
-                get_color='[200, 30, 0, 160]',
-                get_radius=300,
-            ),
-        ],
-    ))
-else:
-    st.warning("No map data to display.")
+#st.header("Air Quality Map")
+#location_avg = filtered_df.groupby(["lat", "lon"])[["value"]].mean().reset_index()
+#if not location_avg.empty:
+   # st.pydeck_chart(pdk.Deck(
+       # map_style="mapbox://styles/mapbox/light-v9",
+       # initial_view_state=pdk.ViewState(
+           # latitude=location_avg["lat"].mean(),
+            #longitude=location_avg["lon"].mean(),
+           # zoom=10,
+           # pitch=50,
+        # ),
+       # layers=[
+            #pdk.Layer(
+                #"ScatterplotLayer",
+                #data=location_avg,
+                #get_position='[lon, lat]',
+                #get_color='[200, 30, 0, 160]',
+               # get_radius=300,
+            #),
+        #],
+   # ))
+#else:
+   # st.warning("No map data to display.")
 
 ## 5. Trend Detection (7-day rolling)
 #st.header("Trend Detection")
