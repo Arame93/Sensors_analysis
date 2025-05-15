@@ -94,7 +94,7 @@ if selected_vars:
     col1, col2 = st.columns(2)
 
     with col1:
-        st.markdown("##### Daily Average")
+        #st.markdown("##### Daily Average")
         if not pivot_df.empty:
             daily_df = pivot_df.groupby("date")[available_vars].mean().reset_index()
             fig = px.line(
@@ -104,7 +104,7 @@ if selected_vars:
             st.plotly_chart(fig, use_container_width=True)
 
     with col2:
-        st.markdown("##### Hourly Average")
+        #st.markdown("##### Hourly Average")
         if not pivot_df.empty:
             hourly_df = pivot_df.groupby("hour")[available_vars].mean().reset_index()
             fig_hourly = px.line(
