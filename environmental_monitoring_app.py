@@ -51,55 +51,24 @@ df["value_type"] = df["value_type"].replace(rename_map)
 # ------------------------------
 # Filter UI (Main Page Layout)
 # ------------------------------
-st.markdown("""
-    <style>
-        .filter-box {
-            background-color: #f0f2f6;
-            padding: 25px;
-            border-radius: 10px;
-            border: 2px solid #d0d0d0;
-            margin-bottom: 30px;
-        }
-        .filter-title {
-            font-size: 24px;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 15px;
-        }
-    </style>
-""", unsafe_allow_html=True)
+with st.container():
+    col1, col2 = st.columns(2)
 
-# Start of styled frame
-st.markdown('<div class="filter-box">', unsafe_allow_html=True)
-st.markdown('<div class="filter-title">🔧 Filters</div>', unsafe_allow_html=True)
+    regions = df["region"].dropna().unique()
+    selected_region = col1.selectbox("Select Region", sorted(regions), key="region_select")
 
-# Layout
-col1, col2 = st.columns(2)
+    month_numbers = sorted(df["month"].dropna().unique())
+    month_names = [calendar.month_name[int(m)] for m in month_numbers]
+    month_mapping = dict(zip(month_names, month_numbers))
+    selected_month_name = col2.selectbox("Select Month", month_names, key="month_select")
+    selected_month = month_mapping[selected_month_name]
 
-# Region selector
-regions = df["region"].dropna().unique()
-selected_region = col1.selectbox("Select Region", sorted(regions), key="region_select")
+    # Variable checkboxes in 3 columns
+    st.markdown("###### Select variables")
+    all_vars = sorted(df["value_type"].dropna().unique())
+    var_cols = st.columns(3)
+    selected_vars = [var for i, var in enumerate(all_vars) if var_cols[i % 3].checkbox(var, key=f"var_{var}")]
 
-# Month selector
-month_numbers = sorted(df["month"].dropna().unique())
-month_names = [calendar.month_name[int(m)] for m in month_numbers]
-month_mapping = dict(zip(month_names, month_numbers))
-selected_month_name = col2.selectbox("Select Month", month_names, key="month_select")
-selected_month = month_mapping[selected_month_name]
-
-# Variable checkboxes in 3 columns
-all_vars = sorted(df["value_type"].dropna().unique())
-var_cols = st.columns(3)
-selected_vars = [var for i, var in enumerate(all_vars) if var_cols[i % 3].checkbox(var, key=f"var_{var}")]
-
-# Close styled frame
-st.markdown('</div>', unsafe_allow_html=True)
-
-# Feedback after selection
-if selected_vars:
-    st.success(f"Selected: Region = {selected_region}, Month = {selected_month_name}, Variables = {', '.join(selected_vars)}")
-else:
-    st.warning("Please select at least one variable.")
 # ------------------------------
 # Filter and Pivot the Data
 # ------------------------------
