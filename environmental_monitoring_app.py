@@ -147,7 +147,7 @@ if selected_vars:
         st.plotly_chart(fig_compare, use_container_width=True)
 
 else:
-    st.warning("Please select **at least one variable** to display analysis.")
+    st.warning("Please select **at least one variable, date and region** to display analysis.")
 
 # ------------------------------
 # Weather Placeholder
