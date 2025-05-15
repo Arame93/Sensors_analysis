@@ -54,25 +54,15 @@ df["value_type"] = df["value_type"].replace(rename_map)
 with st.container():
     st.markdown(
         """
-        <style>
-            .filter-box {
-                background-color: #f0f2f6;
-                padding: 20px;
-                border-left: 5px solid #4A90E2;
-                border-radius: 10px;
-                margin-bottom: 30px;
-            }
-        </style>
-        <div class="filter-box">
+        <div style="background-color:#f7f9fa; padding:20px 30px; border-radius:10px; border-left: 6px solid #4A90E2; margin-bottom: 25px;">
+        <h4 style="color:#4A90E2;">🔧 Filter Options</h4>
         """,
         unsafe_allow_html=True
     )
 
-    st.markdown("### 🎛️ Filter Options")
-
-    # Layout for Region and Month
+    # Two columns for region and month
     col1, col2 = st.columns(2)
-
+    
     regions = df["region"].dropna().unique()
     selected_region = col1.selectbox("Select Region", sorted(regions), key="region_select")
 
@@ -82,16 +72,14 @@ with st.container():
     selected_month_name = col2.selectbox("Select Month", month_names, key="month_select")
     selected_month = month_mapping[selected_month_name]
 
-    # 3-column layout for variable checkboxes
-    st.markdown("##### Select Variables")
+    # Variable checkboxes in 3 columns
+    st.markdown("##### Select Variables:")
     all_vars = sorted(df["value_type"].dropna().unique())
     var_cols = st.columns(3)
     selected_vars = [var for i, var in enumerate(all_vars) if var_cols[i % 3].checkbox(var, key=f"var_{var}")]
 
-    # Close the styled div
+    # Close the styled container
     st.markdown("</div>", unsafe_allow_html=True)
-
-
 
 # ------------------------------
 # Filter and Pivot the Data
