@@ -121,9 +121,14 @@ if selected_vars:
         fig_anomaly = px.box(
             filtered_df,
             x="value_type", y="value",
-            title="Boxplot: Outlier Detection",
+            title="Outlier Detection",
             points="outliers"
         )
+        # Hide x-axis title
+        fig_anomaly.update_layout(
+        xaxis_title=None  
+        )
+
         st.plotly_chart(fig_anomaly, use_container_width=True)
 
     # --------------------------
