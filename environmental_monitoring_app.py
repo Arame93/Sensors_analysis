@@ -72,7 +72,7 @@ with st.container():
     var_cols = st.columns(3)
     selected_vars = [v for i, v in enumerate(all_vars) if var_cols[i % 3].checkbox(v, key=f"var_{v}")]
 
-    st.markdown("</div>", unsafe_allow_html=True)
+st.markdown("</div>", unsafe_allow_html=True)
 
 
 # ------------------------------
