@@ -52,6 +52,10 @@ df["value_type"] = df["value_type"].replace(rename_map)
 # Filter UI (Main Page Layout)
 # ------------------------------
 with st.container():
+    st.markdown("""
+        <div style='background-color:#f9f9f9; padding:20px; border:1px solid #ccc; border-radius:10px; margin-bottom:20px;'>
+            <h4 style='color:#333;'>🔍 Filter Options</h4>
+    """, unsafe_allow_html=True)
     col1, col2 = st.columns(2)
 
     regions = sorted(df["region"].dropna().unique())
@@ -67,6 +71,9 @@ with st.container():
     all_vars = sorted(df["value_type"].dropna().unique())
     var_cols = st.columns(3)
     selected_vars = [v for i, v in enumerate(all_vars) if var_cols[i % 3].checkbox(v, key=f"var_{v}")]
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
 
 # ------------------------------
 # Filter and Pivot the Data
