@@ -1,4 +1,5 @@
 import streamlit as st
+import numpy as np
 import pandas as pd
 import plotly.express as px
 import pydeck as pdk
@@ -158,7 +159,32 @@ else:
 # Weather Placeholder
 # ------------------------------
 st.header("🌦️ Weather Correlation")
-st.info("Add weather data to perform correlation analysis with temperature, humidity, etc.")
+
+# Filter numeric pivoted data
+if available_vars and not pivot_df.empty:
+    corr_df = pivot_df[available_vars].copy()
+
+    # Drop rows with NaNs to compute correlation
+    corr_df = corr_df.dropna()
+
+    if not corr_df.empty and len(corr_df.columns) >= 2:
+        corr_matrix = corr_df.corr()
+
+        fig_corr = px.imshow(
+            corr_matrix,
+            text_auto=True,
+            color_continuous_scale="RdBu_r",
+            title="Correlation Heatmap between Selected Variables",
+            labels=dict(color="Correlation"),
+            aspect="auto"
+        )
+        st.plotly_chart(fig_corr, use_container_width=True)
+    else:
+        st.warning("Not enough data to compute correlation (need at least 2 variables without NaNs).")
+else:
+    st.warning("Select at least two variables to see correlation heatmap.")
+
+#st.info("Add weather data to perform correlation analysis with temperature, humidity, etc.")
 
 # ------------------------------
 # Footer
