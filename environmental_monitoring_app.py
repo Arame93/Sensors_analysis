@@ -100,22 +100,15 @@ st.header("Daily and hourly trends")
 # daily plot with click interaction
 #st.header("Daily trends")
 if not pivot_df.empty:
-    # Compute daily averages
     daily_df = pivot_df.groupby("date")[available_vars].mean().reset_index()
-
-    # Melt for proper plotting: one variable per line
-    daily_melted = daily_df.melt(id_vars="date", value_vars=available_vars)
-
-    # Plot with Plotly Express
     fig_daily = px.line(
-        daily_melted,
-        x="date", y="value", color="variable",
-        title=f"Daily Averages in {selected_region} ({selected_month_name})",
-        markers=True
+        daily_df, x="date", y=available_vars,
+        title=f"Daily averages in {selected_region} ({selected_month_name})"
     )
+    st.plotly_chart(fig_daily, use_container_width=True)
     st.markdown("Click on a point to see hourly trends for that date:")
     selected_points = plotly_events(fig_daily, click_event=True, select_event=False)
-    st.write("")   # Add space
+    st.write("")  # Add space
 
     # hourly trend on clicked day
     if selected_points:
@@ -135,7 +128,7 @@ if not pivot_df.empty:
 # --------------------------
 # Anomaly Detection
 # --------------------------
-st.subheader("⚠️ Anomaly Detection")
+st.subheader("Anomaly Detection")
 if not filtered_df.empty:
     fig_anomaly = px.box(
         filtered_df,
@@ -151,7 +144,7 @@ else:
 # --------------------------
 # Regional Comparison
 # --------------------------
-st.subheader("📍 Regional Comparison")
+st.subheader("Regional Comparison")
 compare_df = df[df["value_type"].isin(selected_vars)]
 
 if not compare_df.empty:
