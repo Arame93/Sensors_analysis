@@ -198,8 +198,8 @@ with col2:
         )
         st.plotly_chart(fig_compare, use_container_width=True)
 
-else:
-    st.warning("Please select **at least one variable, month, and region** to view the analysis.")
+    else:
+        st.warning("Please select **at least one variable, month, and region** to view the analysis.")
 
 # ------------------------------
 # Weather Correlation Section
