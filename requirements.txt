@@ -4,6 +4,7 @@ requests
 seaborn
 pydeck
 plotly
+streamlit-plotly-events
 #geopandas
 #leafmap
 #folium
