@@ -100,8 +100,10 @@ st.header("Daily and hourly trends")
 # daily plot with click interaction
 #st.header("Daily trends")
 st.write(pivot_df.head(5))
+
 if not pivot_df.empty:
     daily_df = pivot_df.groupby("date")[available_vars].mean().reset_index()
+    st.write(daily_df.head(5))
     fig_daily = px.line(
         daily_df, x="date", y=available_vars,
         title=f"Daily averages in {selected_region} ({selected_month_name})"
