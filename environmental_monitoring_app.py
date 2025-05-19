@@ -1,5 +1,3 @@
-
-
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -48,7 +46,12 @@ rename_map = {
     'durP2': 'durPM2.5',
     'noise_Leq': 'Noise_Leq'
 }
+
+rename_items = {"Meru Sensor Mobile 6": "Meru",
+                "Meru mobile sensor" : "Meru"}
+
 df["value_type"] = df["value_type"].replace(rename_map)
+df["region"] = df["region"].replace(rename_items)
 
 # ------------------------------
 # Filter UI (Main Page Layout)
