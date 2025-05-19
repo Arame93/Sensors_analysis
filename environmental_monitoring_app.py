@@ -97,41 +97,33 @@ if selected_vars:
 # --------------------------
 st.header("Daily and Hourly Trends")
 
-if available_vars and not pivot_df.empty:
+# DAILY PLOT WITH CLICK INTERACTION
+st.header("Daily trends")
+if not pivot_df.empty:
     daily_df = pivot_df.groupby("date")[available_vars].mean().reset_index()
-    daily_melted = daily_df.melt(id_vars="date", value_vars=available_vars)
+    fig_daily = px.line(
+        daily_df, x="date", y=available_vars,
+        title=f"Daily Averages in {selected_region} ({selected_month_name})"
+    )
 
-    col1, col2 = st.columns(2)
+    st.markdown("Click on a point to see hourly trends for that date:")
+    selected_points = plotly_events(fig_daily, click_event=True, select_event=False)
+    st.write("")  # Add space
 
-    with col1:
-        fig_daily = px.line(
-            daily_melted, x="date", y="value", color="variable",
-            title=f"Daily Averages in {selected_region} ({selected_month_name})",
-            markers=True
+    # HOURLY TREND ON CLICKED DATE
+    if selected_points:
+        selected_date_str = selected_points[0]['x']  # clicked date string
+        selected_date = pd.to_datetime(selected_date_str).date()
+
+        st.subheader(f"⏰ Hourly Trends for {selected_date}")
+        hourly_df = pivot_df[pivot_df["date"] == selected_date].groupby("hour")[available_vars].mean().reset_index()
+        fig_hourly = px.line(
+            hourly_df, x="hour", y=available_vars,
+            title=f"Hourly Averages on {selected_date}"
         )
-        st.markdown("Click on a point to see hourly trends for that date:")
-        selected_points = plotly_events(fig_daily, click_event=True, select_event=False)
-        st.plotly_chart(fig_daily, use_container_width=True)
-
-    with col2:
-        st.subheader("Hourly Trend")
-        if selected_points:
-            selected_date_str = selected_points[0]['x']
-            selected_date = pd.to_datetime(selected_date_str).date()
-
-            hourly_df = pivot_df[pivot_df["date"] == selected_date].groupby("hour")[available_vars].mean().reset_index()
-            hourly_melted = hourly_df.melt(id_vars="hour", value_vars=available_vars)
-
-            fig_hourly = px.line(
-                hourly_melted, x="hour", y="value", color="variable",
-                title=f"Hourly Averages on {selected_date}",
-                markers=True
-            )
-            st.plotly_chart(fig_hourly, use_container_width=True)
-        else:
-            st.info("Click on a date in the daily chart to see hourly trends.")
-else:
-    st.warning("⚠️ No selected variables available for analysis. Please check your filters.")
+        st.plotly_chart(fig_hourly, use_container_width=True)
+    else:
+        st.info("Click on a date in the daily chart to see hourly trends.")
 
 # --------------------------
 # Anomaly Detection
