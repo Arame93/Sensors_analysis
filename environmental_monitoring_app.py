@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 import calendar
-#from streamlit_plotly_events import plotly_events
+from streamlit_plotly_events import plotly_events
 
 # ------------------------------
 # Page Setup and Title Styling
@@ -114,6 +114,23 @@ st.markdown("""
     </style>
     <div class="subtitle">Daily and hourly trends</div>
 """, unsafe_allow_html=True)
+
+daily_df = pivot_df.groupby("date")[available_vars].mean().reset_index()
+fig = px.line(
+    daily_df, x="date", y=available_vars,
+    title="Daily Averages"
+)
+selected_points = plotly_events(fig, click_event=True, select_event=False)
+st.plotly_chart(fig, use_container_width=True)
+
+# If a point was clicked, show hourly trend
+if selected_points:
+    selected_date = pd.to_datetime(selected_points[0]["x"]).date()
+    st.markdown(f"### Hourly Trends for {selected_date}")
+    hourly_df = pivot_df[pivot_df["date"] == selected_date].groupby("hour")[available_vars].mean().reset_index()
+    fig_hourly = px.line(hourly_df, x="hour", y=available_vars, title=f"Hourly Averages on {selected_date}")
+    st.plotly_chart(fig_hourly, use_container_width=True)
+    
 
 #st.header("Daily and hourly trends")
 #col1, col2 = st.columns(2)
