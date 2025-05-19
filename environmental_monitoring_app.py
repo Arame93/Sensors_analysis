@@ -100,13 +100,9 @@ st.header("Daily and hourly trends")
 # daily plot with click interaction
 #st.header("Daily trends")
 if not pivot_df.empty:
-    # Aggregate daily averages
     daily_df = pivot_df.groupby("date")[available_vars].mean().reset_index()
-
-    # Melt to long format for proper Plotly line plotting
     daily_melted = daily_df.melt(id_vars="date", value_vars=available_vars, var_name="variable", value_name="value")
 
-    # Plot with color as the variable name
     fig_daily = px.line(
         daily_melted,
         x="date", y="value", color="variable",
@@ -114,22 +110,32 @@ if not pivot_df.empty:
         markers=True
     )
 
-    st.plotly_chart(fig_daily, use_container_width=True)
     st.markdown("Click on a point to see hourly trends for that date:")
     selected_points = plotly_events(fig_daily, click_event=True, select_event=False)
+    st.plotly_chart(fig_daily, use_container_width=True)
 
-    # hourly trend on clicked day
+    # Debug: Show what was clicked
+    st.write("Clicked data:", selected_points)
+
+    # If a point is selected, show the hourly chart
     if selected_points:
-        selected_date_str = selected_points[0]['x']  # clicked date string
-        selected_date = pd.to_datetime(selected_date_str).date()
+        clicked_date_str = selected_points[0].get("x")
+        try:
+            selected_date = pd.to_datetime(clicked_date_str).date()
+            st.subheader(f"⏰ Hourly Trends for {selected_date}")
 
-        #st.subheader(f"Hourly trends for {selected_date}")
-        hourly_df = pivot_df[pivot_df["date"] == selected_date].groupby("hour")[available_vars].mean().reset_index()
-        fig_hourly = px.line(
-            hourly_df, x="hour", y=available_vars,
-            title=f"Hourly Averages on {selected_date}"
-        )
-        st.plotly_chart(fig_hourly, use_container_width=True)
+            hourly_df = pivot_df[pivot_df["date"] == selected_date].groupby("hour")[available_vars].mean().reset_index()
+            hourly_melted = hourly_df.melt(id_vars="hour", value_vars=available_vars, var_name="variable", value_name="value")
+
+            fig_hourly = px.line(
+                hourly_melted,
+                x="hour", y="value", color="variable",
+                title=f"Hourly Averages on {selected_date}",
+                markers=True
+            )
+            st.plotly_chart(fig_hourly, use_container_width=True)
+        except Exception as e:
+            st.warning(f"⚠️ Could not parse selected date: {e}")
     else:
         st.info("Click on a date in the daily chart to see hourly trends.")
 
