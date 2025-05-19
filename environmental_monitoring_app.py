@@ -109,14 +109,6 @@ if selected_vars:
     available_vars = [v for v in selected_vars if v in pivot_df.columns]
 
 # --------------------------
-# Daily & Hourly Trends
-# --------------------------
-# --------------------------
-# Daily & Hourly Trends
-# --------------------------
-from streamlit_plotly_events import plotly_events
-
-# --------------------------
 # Daily and Hourly Trend Charts
 # --------------------------
 st.header("Daily and Hourly Trends")
