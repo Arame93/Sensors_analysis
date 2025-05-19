@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 import calendar
-from streamlit_plotly_events import plotly_events
+#from streamlit_plotly_events import plotly_events
 
 # ------------------------------
 # Page Setup and Title Styling
@@ -99,7 +99,7 @@ st.header("Daily and hourly trends")
 
 # daily plot with click interaction
 #st.header("Daily trends")
-st.header("📊 Daily and Hourly Trends")
+st.header("Daily and hourly trends")
 col1, col2 = st.columns(2)
 
 # --- Left Column: Daily Trend Chart ---
@@ -127,6 +127,7 @@ with col2:
             title=f"Hourly Averages on {selected_date}"
         )
         st.plotly_chart(fig_hourly, use_container_width=True)
+        
 # --------------------------
 # Anomaly Detection
 # --------------------------
