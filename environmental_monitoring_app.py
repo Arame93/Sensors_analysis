@@ -115,23 +115,34 @@ st.markdown("""
     <div class="subtitle">Daily and hourly trends</div>
 """, unsafe_allow_html=True)
 
-daily_df = pivot_df.groupby("date")[available_vars].mean().reset_index()
-fig = px.line(
-    daily_df, x="date", y=available_vars,
-    title="Daily Averages"
-)
-selected_points = plotly_events(fig, click_event=True, select_event=False)
-st.plotly_chart(fig, use_container_width=True)
+#st.header("Daily and hourly trends")
+#col1, col2 = st.columns(2)
 
-# If a point was clicked, show hourly trend
-if selected_points:
-    selected_date = pd.to_datetime(selected_points[0]["x"]).date()
-    st.markdown(f"### Hourly Trends for {selected_date}")
+# --- Left Column: Daily Trend Chart ---
+#with col1:
+if not pivot_df.empty:
+    daily_df = pivot_df.groupby("date")[available_vars].mean().reset_index()
+    fig = px.line(
+        daily_df, x="date", y=available_vars,
+        title=f"Daily Averages in {selected_region} ({selected_month_name})"
+    )
+    st.plotly_chart(fig, use_container_width=True)
+
+# --- Right Column: Hourly Trend Chart with Date Selector ---
+#with col2:
+if not pivot_df.empty:
+    # Add a date selector based on available dates
+    unique_dates = pivot_df["date"].dropna().unique()
+    selected_date = st.selectbox("Select a date for hourly trends", sorted(unique_dates))
+
+    # Filter and plot hourly data for selected date
     hourly_df = pivot_df[pivot_df["date"] == selected_date].groupby("hour")[available_vars].mean().reset_index()
-    fig_hourly = px.line(hourly_df, x="hour", y=available_vars, title=f"Hourly Averages on {selected_date}")
-    st.plotly_chart(fig_hourly, use_container_width=True)
-    
 
+    fig_hourly = px.line(
+        hourly_df, x="hour", y=available_vars,
+        title=f"Hourly Averages on {selected_date}"
+    )
+    st.plotly_chart(fig_hourly, use_container_width=True)
 
         
 # --------------------------
