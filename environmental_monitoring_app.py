@@ -107,12 +107,11 @@ if selected_vars:
     ).reset_index()
 
     available_vars = [v for v in selected_vars if v in pivot_df.columns]
+# --------------------------
+# Daily & Hourly Trends
+# --------------------------
 
-    # --------------------------
-    # Daily & Hourly Trends
-    # --------------------------
-
-st.header("📅 Daily Trends")
+st.header("Daily Trends")
 if not pivot_df.empty:
     daily_df = pivot_df.groupby("date")[available_vars].mean().reset_index()
     fig_daily = px.line(
