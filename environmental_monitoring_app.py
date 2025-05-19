@@ -98,7 +98,24 @@ if selected_vars:
 # --------------------------
 # daily plot with click interaction
 #st.header("Daily trends")
-st.header("Daily and hourly trends")
+st.markdown("""
+    <style>
+        .subtitle {
+            background-color: #f0f0f0;  /* light grey */
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            color: #333333;  /* dark grey text */
+            font-size: 20px;  /* smaller font size */
+            font-weight: normal;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+    </style>
+    <div class="subtitle">Daily and hourly trends</div>
+""", unsafe_allow_html=True)
+
+#st.header("Daily and hourly trends")
 #col1, col2 = st.columns(2)
 
 # --- Left Column: Daily Trend Chart ---
