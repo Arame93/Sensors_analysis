@@ -95,17 +95,17 @@ if selected_vars:
 # --------------------------
 # Daily and Hourly Trend Charts
 # --------------------------
-st.header("Daily and Hourly Trends")
+st.header("Daily and hourly trends")
 
 # DAILY PLOT WITH CLICK INTERACTION
-st.header("Daily trends")
+#st.header("Daily trends")
 if not pivot_df.empty:
     daily_df = pivot_df.groupby("date")[available_vars].mean().reset_index()
     fig_daily = px.line(
         daily_df, x="date", y=available_vars,
-        title=f"Daily Averages in {selected_region} ({selected_month_name})"
+        title=f"Daily averages in {selected_region} ({selected_month_name})"
     )
-
+    st.plotly_chart(fig_daily, use_container_width=True)
     st.markdown("Click on a point to see hourly trends for that date:")
     selected_points = plotly_events(fig_daily, click_event=True, select_event=False)
     st.write("")  # Add space
@@ -115,7 +115,7 @@ if not pivot_df.empty:
         selected_date_str = selected_points[0]['x']  # clicked date string
         selected_date = pd.to_datetime(selected_date_str).date()
 
-        st.subheader(f"⏰ Hourly Trends for {selected_date}")
+        st.subheader(f"Hourly trends for {selected_date}")
         hourly_df = pivot_df[pivot_df["date"] == selected_date].groupby("hour")[available_vars].mean().reset_index()
         fig_hourly = px.line(
             hourly_df, x="hour", y=available_vars,
