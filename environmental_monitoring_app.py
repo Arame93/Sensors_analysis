@@ -111,32 +111,38 @@ if selected_vars:
 # Daily & Hourly Trends
 # --------------------------
 
-st.header("Daily Trends")
-if not pivot_df.empty:
-    daily_df = pivot_df.groupby("date")[available_vars].mean().reset_index()
-    fig_daily = px.line(
-        daily_df, x="date", y=available_vars,
-        title=f"Daily Averages in {selected_region} ({selected_month_name})"
-    )
+st.header("📊 Daily and Hourly Trends")
 
-    st.markdown("Click on a point to see hourly trends for that date:")
-    selected_points = plotly_events(fig_daily, click_event=True, select_event=False)
-    st.write("")  # Add space
+col1, col2 = st.columns(2)
 
-    # HOURLY TREND ON CLICKED DATE
+# --- Left: DAILY chart with interactivity
+with col1:
+    st.subheader("📅 Daily Trend")
+    if not pivot_df.empty:
+        daily_df = pivot_df.groupby("date")[available_vars].mean().reset_index()
+        fig_daily = px.line(
+            daily_df, x="date", y=available_vars,
+            title=f"Daily Averages in {selected_region} ({selected_month_name})"
+        )
+        selected_points = plotly_events(fig_daily, click_event=True, select_event=False)
+        st.write("Click on a date to view hourly breakdown.")
+
+# --- Right: HOURLY chart, shown after clicking
+with col2:
+    st.subheader("⏰ Hourly Trend")
     if selected_points:
-        selected_date_str = selected_points[0]['x']  # clicked date string
+        selected_date_str = selected_points[0]['x']
         selected_date = pd.to_datetime(selected_date_str).date()
 
-        st.subheader(f"⏰ Hourly Trends for {selected_date}")
-        hourly_df = pivot_df[pivot_df["date"] == selected_date].groupby("hour")[available_vars].mean().reset_index()
+        hourly_df = pivot_df[pivot_df["date"] == selected_date][["hour"] + available_vars].dropna().melt(id_vars="hour")
         fig_hourly = px.line(
-            hourly_df, x="hour", y=available_vars,
+            hourly_df, x="hour", y="value", color="variable",
             title=f"Hourly Averages on {selected_date}"
         )
         st.plotly_chart(fig_hourly, use_container_width=True)
     else:
-        st.info("Click on a date in the daily chart to see hourly trends.")
+        st.info("Click a date in the daily chart to show hourly trend.")
+
         
     #with st.container():
         ##st.markdown('<div class="stFrame">', unsafe_allow_html=True)
