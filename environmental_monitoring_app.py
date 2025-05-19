@@ -99,33 +99,33 @@ if selected_vars:
 # daily plot with click interaction
 #st.header("Daily trends")
 st.header("Daily and hourly trends")
-col1, col2 = st.columns(2)
+#col1, col2 = st.columns(2)
 
 # --- Left Column: Daily Trend Chart ---
-with col1:
-    if not pivot_df.empty:
-        daily_df = pivot_df.groupby("date")[available_vars].mean().reset_index()
-        fig = px.line(
-            daily_df, x="date", y=available_vars,
-            title=f"Daily Averages in {selected_region} ({selected_month_name})"
-        )
-        st.plotly_chart(fig, use_container_width=True)
+#with col1:
+if not pivot_df.empty:
+    daily_df = pivot_df.groupby("date")[available_vars].mean().reset_index()
+    fig = px.line(
+        daily_df, x="date", y=available_vars,
+        title=f"Daily Averages in {selected_region} ({selected_month_name})"
+    )
+    st.plotly_chart(fig, use_container_width=True)
 
 # --- Right Column: Hourly Trend Chart with Date Selector ---
-with col2:
-    if not pivot_df.empty:
-        # Add a date selector based on available dates
-        unique_dates = pivot_df["date"].dropna().unique()
-        selected_date = st.selectbox("Select a date for hourly trends", sorted(unique_dates))
+#with col2:
+if not pivot_df.empty:
+    # Add a date selector based on available dates
+    unique_dates = pivot_df["date"].dropna().unique()
+    selected_date = st.selectbox("Select a date for hourly trends", sorted(unique_dates))
 
-        # Filter and plot hourly data for selected date
-        hourly_df = pivot_df[pivot_df["date"] == selected_date].groupby("hour")[available_vars].mean().reset_index()
+    # Filter and plot hourly data for selected date
+    hourly_df = pivot_df[pivot_df["date"] == selected_date].groupby("hour")[available_vars].mean().reset_index()
 
-        fig_hourly = px.line(
-            hourly_df, x="hour", y=available_vars,
-            title=f"Hourly Averages on {selected_date}"
-        )
-        st.plotly_chart(fig_hourly, use_container_width=True)
+    fig_hourly = px.line(
+        hourly_df, x="hour", y=available_vars,
+        title=f"Hourly Averages on {selected_date}"
+    )
+    st.plotly_chart(fig_hourly, use_container_width=True)
         
 # --------------------------
 # Anomaly Detection
