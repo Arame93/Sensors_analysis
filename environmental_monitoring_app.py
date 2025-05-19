@@ -111,9 +111,17 @@ if selected_vars:
 # --------------------------
 # Daily and Hourly Trend Charts
 # --------------------------
-st.header("Daily and Hourly Trends")
+from streamlit_plotly_events import plotly_events
 
-if not pivot_df.empty:
+# --------------------------
+# Daily and Hourly Trend Charts
+# --------------------------
+st.header("Daily and hourly trends")
+
+# Only proceed if variables were successfully pivoted
+available_vars = [v for v in selected_vars if v in pivot_df.columns]
+
+if available_vars:
     # Prepare daily averages and melt for proper plotting
     daily_df = pivot_df.groupby("date")[available_vars].mean().reset_index()
     daily_melted = daily_df.melt(id_vars="date", value_vars=available_vars)
@@ -152,6 +160,8 @@ if not pivot_df.empty:
             st.plotly_chart(fig_hourly, use_container_width=True)
         else:
             st.info("Click on a date in the daily chart to see hourly trends.")
+else:
+    st.warning("⚠️ No selected variables found in the dataset. Please check your selections.")
 
 
     #with st.container():
