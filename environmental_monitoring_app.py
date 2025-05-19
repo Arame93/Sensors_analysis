@@ -4,6 +4,7 @@ import pandas as pd
 import plotly.express as px
 import pydeck as pdk
 import calendar
+from streamlit_plotly_events import plotly_events
 
 # ------------------------------
 # Page Setup and Title Styling
@@ -110,30 +111,58 @@ if selected_vars:
     # --------------------------
     # Daily & Hourly Trends
     # --------------------------
-    with st.container():
-        #st.markdown('<div class="stFrame">', unsafe_allow_html=True)
-        st.subheader("Daily and Hourly Trends")
-        col1, col2 = st.columns(2)
 
-        with col1:
-            if not pivot_df.empty:
-                daily_df = pivot_df.groupby("date")[available_vars].mean().reset_index()
-                fig = px.line(
-                    daily_df, x="date", y=available_vars,
-                    title=f"Daily Averages in {selected_region} ({selected_month_name})"
-                )
-                st.plotly_chart(fig, use_container_width=True)
+st.header("📅 Daily Trends")
+if not pivot_df.empty:
+    daily_df = pivot_df.groupby("date")[available_vars].mean().reset_index()
+    fig_daily = px.line(
+        daily_df, x="date", y=available_vars,
+        title=f"Daily Averages in {selected_region} ({selected_month_name})"
+    )
 
-        with col2:
-            if not pivot_df.empty:
-                hourly_df = pivot_df.groupby("hour")[available_vars].mean().reset_index()
-                fig_hourly = px.line(
-                    hourly_df, x="hour", y=available_vars,
-                    title=f"Hourly Averages in {selected_region} ({selected_month_name})"
-                )
-                st.plotly_chart(fig_hourly, use_container_width=True)
+    st.markdown("Click on a point to see hourly trends for that date:")
+    selected_points = plotly_events(fig_daily, click_event=True, select_event=False)
+    st.write("")  # Add space
 
-        #st.markdown('</div>', unsafe_allow_html=True)
+    # HOURLY TREND ON CLICKED DATE
+    if selected_points:
+        selected_date_str = selected_points[0]['x']  # clicked date string
+        selected_date = pd.to_datetime(selected_date_str).date()
+
+        st.subheader(f"⏰ Hourly Trends for {selected_date}")
+        hourly_df = pivot_df[pivot_df["date"] == selected_date].groupby("hour")[available_vars].mean().reset_index()
+        fig_hourly = px.line(
+            hourly_df, x="hour", y=available_vars,
+            title=f"Hourly Averages on {selected_date}"
+        )
+        st.plotly_chart(fig_hourly, use_container_width=True)
+    else:
+        st.info("Click on a date in the daily chart to see hourly trends.")
+        
+    #with st.container():
+        ##st.markdown('<div class="stFrame">', unsafe_allow_html=True)
+        #st.subheader("Daily and Hourly Trends")
+        #col1, col2 = st.columns(2)
+
+        #with col1:
+            #if not pivot_df.empty:
+                #daily_df = pivot_df.groupby("date")[available_vars].mean().reset_index()
+                #fig = px.line(
+                    #daily_df, x="date", y=available_vars,
+                    #title=f"Daily Averages in {selected_region} ({selected_month_name})"
+                #)
+                #st.plotly_chart(fig, use_container_width=True)
+
+        #with col2:
+            #if not pivot_df.empty:
+                #hourly_df = pivot_df.groupby("hour")[available_vars].mean().reset_index()
+                #fig_hourly = px.line(
+                    #hourly_df, x="hour", y=available_vars,
+                    #title=f"Hourly Averages in {selected_region} ({selected_month_name})"
+                #)
+                #st.plotly_chart(fig_hourly, use_container_width=True)
+
+        ##st.markdown('</div>', unsafe_allow_html=True)
 
     # --------------------------
     # Anomaly Detection
