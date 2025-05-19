@@ -99,6 +99,7 @@ st.header("Daily and hourly trends")
 
 # daily plot with click interaction
 #st.header("Daily trends")
+st.write(pivot_df.head(5)
 if not pivot_df.empty:
     daily_df = pivot_df.groupby("date")[available_vars].mean().reset_index()
     fig_daily = px.line(
@@ -114,7 +115,7 @@ if not pivot_df.empty:
         selected_date_str = selected_points[0]['x']  # clicked date string
         selected_date = pd.to_datetime(selected_date_str).date()
 
-        st.subheader(f"Hourly trends for {selected_date}")
+        #st.subheader(f"Hourly trends for {selected_date}")
         hourly_df = pivot_df[pivot_df["date"] == selected_date].groupby("hour")[available_vars].mean().reset_index()
         fig_hourly = px.line(
             hourly_df, x="hour", y=available_vars,
