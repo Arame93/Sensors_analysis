@@ -99,7 +99,7 @@ st.header("Daily and hourly trends")
 
 # daily plot with click interaction
 #st.header("Daily trends")
-st.write(pivot_df.head(5)
+st.write(pivot_df.head(5))
 if not pivot_df.empty:
     daily_df = pivot_df.groupby("date")[available_vars].mean().reset_index()
     fig_daily = px.line(
