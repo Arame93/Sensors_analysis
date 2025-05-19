@@ -66,9 +66,9 @@ df["region"] = df["region"].replace(rename_items)
 # Filter UI inside a styled frame
 # ------------------------------
 with st.container():
-    st.markdown('<div class="stFrame">', unsafe_allow_html=True)
+    #st.markdown('<div class="stFrame">', unsafe_allow_html=True)
 
-    st.subheader("Filters")
+    #st.subheader("Filters")
     col1, col2 = st.columns(2)
 
     regions = df["region"].dropna().unique()
@@ -86,7 +86,7 @@ with st.container():
     var_cols = st.columns(3)
     selected_vars = [var for i, var in enumerate(all_vars) if var_cols[i % 3].checkbox(var, key=f"var_{var}")]
 
-    st.markdown('</div>', unsafe_allow_html=True)
+    #st.markdown('</div>', unsafe_allow_html=True)
 
 # ------------------------------
 # Filter and Pivot the Data
@@ -111,7 +111,7 @@ if selected_vars:
     # Daily & Hourly Trends
     # --------------------------
     with st.container():
-        st.markdown('<div class="stFrame">', unsafe_allow_html=True)
+        #st.markdown('<div class="stFrame">', unsafe_allow_html=True)
         st.subheader("Daily and Hourly Trends")
         col1, col2 = st.columns(2)
 
@@ -133,13 +133,13 @@ if selected_vars:
                 )
                 st.plotly_chart(fig_hourly, use_container_width=True)
 
-        st.markdown('</div>', unsafe_allow_html=True)
+        #st.markdown('</div>', unsafe_allow_html=True)
 
     # --------------------------
     # Anomaly Detection
     # --------------------------
     with st.container():
-        st.markdown('<div class="stFrame">', unsafe_allow_html=True)
+        #st.markdown('<div class="stFrame">', unsafe_allow_html=True)
         st.subheader("⚠️ Anomaly Detection")
         if not filtered_df.empty:
             fig_anomaly = px.box(
@@ -150,7 +150,7 @@ if selected_vars:
             )
             fig_anomaly.update_layout(xaxis_title=None)
             st.plotly_chart(fig_anomaly, use_container_width=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+        #st.markdown('</div>', unsafe_allow_html=True)
 
     # --------------------------
     # Regional Comparison
@@ -173,7 +173,7 @@ else:
 # Weather Correlation Section
 # ------------------------------
 with st.container():
-    st.markdown('<div class="stFrame">', unsafe_allow_html=True)
+    #st.markdown('<div class="stFrame">', unsafe_allow_html=True)
     st.subheader("🌦️ Weather Correlation")
 
     if 'available_vars' in locals() and available_vars and not pivot_df.empty:
@@ -196,7 +196,7 @@ with st.container():
     else:
         st.warning("Please select at least two variables to compute correlation.")
 
-    st.markdown('</div>', unsafe_allow_html=True)
+    #st.markdown('</div>', unsafe_allow_html=True)
 
 # ------------------------------
 # Footer
