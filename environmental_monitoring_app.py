@@ -115,7 +115,7 @@ if not pivot_df.empty:
     )
     st.markdown("Click on a point to see hourly trends for that date:")
     selected_points = plotly_events(fig_daily, click_event=True, select_event=False)
-    st.write("")  # Add space
+    st.write("")   # Add space
 
     # hourly trend on clicked day
     if selected_points:
