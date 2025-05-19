@@ -111,45 +111,50 @@ if selected_vars:
 # --------------------------
 # Daily & Hourly Trends
 # --------------------------
-st.header("Daily and Hourly Trends")
+# --------------------------
+# Daily & Hourly Trends
+# --------------------------
+if selected_vars:
+    st.header("📊 Daily and Hourly Trends")
+    col1, col2 = st.columns(2)
 
-col1, col2 = st.columns(2)
-
-with col1:
-    st.subheader("Daily Trend")
-    if not pivot_df.empty:
-        # Melt to get one value per variable per day
-        daily_df = pivot_df[["date"] + available_vars].dropna().melt(id_vars="date", value_vars=available_vars)
-        fig_daily = px.line(
-            daily_df, x="date", y="value", color="variable",
-            title=f"Daily Averages in {selected_region} ({selected_month_name})",
-            markers=True
-        )
-        selected_points = plotly_events(fig_daily, click_event=True, select_event=False)
-        st.write("Click on a date to view hourly breakdown.")
-        st.plotly_chart(fig_daily, use_container_width=True)
-
-# --- Right: HOURLY chart, shown after clicking
-with col2:
-    st.subheader("⏰ Hourly Trend")
-    if selected_points:
-        selected_date_str = selected_points[0]['x']
-        selected_date = pd.to_datetime(selected_date_str).date()
-
-        # Filter to the selected date only
-        hourly_df = pivot_df[pivot_df["date"] == selected_date]
-        if not hourly_df.empty:
-            hourly_melted = hourly_df[["hour"] + available_vars].dropna().melt(id_vars="hour")
-            fig_hourly = px.line(
-                hourly_melted, x="hour", y="value", color="variable",
-                title=f"Hourly Averages on {selected_date}",
+    # --- Left: DAILY chart with interactivity
+    with col1:
+        st.subheader("📅 Daily Trend")
+        if not pivot_df.empty:
+            daily_df = pivot_df[["date"] + available_vars].dropna().melt(id_vars="date", value_vars=available_vars)
+            fig_daily = px.line(
+                daily_df, x="date", y="value", color="variable",
+                title=f"Daily Averages in {selected_region} ({selected_month_name})",
                 markers=True
             )
-            st.plotly_chart(fig_hourly, use_container_width=True)
+            selected_points = plotly_events(fig_daily, click_event=True, select_event=False)
+            st.write("Click on a date to view hourly breakdown.")
+            st.plotly_chart(fig_daily, use_container_width=True)
+
+    # --- Right: HOURLY chart, shown after clicking
+    with col2:
+        st.subheader("⏰ Hourly Trend")
+        if 'selected_points' in locals() and selected_points:
+            selected_date_str = selected_points[0]['x']
+            selected_date = pd.to_datetime(selected_date_str).date()
+
+            hourly_df = pivot_df[pivot_df["date"] == selected_date]
+            if not hourly_df.empty:
+                hourly_melted = hourly_df[["hour"] + available_vars].dropna().melt(id_vars="hour")
+                fig_hourly = px.line(
+                    hourly_melted, x="hour", y="value", color="variable",
+                    title=f"Hourly Averages on {selected_date}",
+                    markers=True
+                )
+                st.plotly_chart(fig_hourly, use_container_width=True)
+            else:
+                st.warning("No data available for the selected date.")
         else:
-            st.warning("No data available for the selected date.")
-    else:
-        st.info("Click a date in the daily chart to show hourly trend.")
+            st.info("Click a date in the daily chart to show hourly trend.")
+else:
+    st.warning("Please select at least one variable to display trends.")
+
 
 
     #with st.container():
