@@ -52,11 +52,11 @@ df["region"] = df["region"].replace(rename_items)
 # ------------------------------
 # Filter UI
 # ------------------------------
-st.subheader("Filters")
+#st.subheader("Filters")
 col1, col2 = st.columns(2)
 
 regions = df["region"].dropna().unique()
-selected_region = col1.selectbox("Select Region", sorted(regions), key="region_select")
+selected_region = col1.multiselect("Select Region", sorted(regions), key="region_select")
 
 month_numbers = sorted(df["month"].dropna().unique())
 month_names = [calendar.month_name[int(m)] for m in month_numbers]
