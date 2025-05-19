@@ -160,17 +160,6 @@ else:
 # ------------------------------
 st.header("🌦️ Weather Correlation")
 
-# Pivot data
-pivot_df = filtered_df.pivot_table(
-    index=["timestamp", "date", "hour"],
-    columns="value_type",
-    values="value",
-    aggfunc="mean"
-).reset_index()
-
-# Define available_vars
-available_vars = [var for var in selected_vars if var in pivot_df.columns]
-
 # Filter numeric pivoted data
 if available_vars and not pivot_df.empty:
     corr_df = pivot_df[available_vars].copy()
