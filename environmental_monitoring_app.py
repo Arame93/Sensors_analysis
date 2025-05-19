@@ -140,7 +140,7 @@ with col2:
             title=f"Hourly Averages on {selected_date}"
         )
         st.plotly_chart(fig_hourly, use_container_width=True)
-    else:
+     else:
         st.info("Click a date in the daily chart to show hourly trend.")
 
         
