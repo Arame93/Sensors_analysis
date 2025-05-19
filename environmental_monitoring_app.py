@@ -100,15 +100,23 @@ st.header("Daily and hourly trends")
 # daily plot with click interaction
 #st.header("Daily trends")
 if not pivot_df.empty:
+    # Aggregate daily averages
     daily_df = pivot_df.groupby("date")[available_vars].mean().reset_index()
-    #st.write(daily_df.head(5))
+
+    # Melt to long format for proper Plotly line plotting
+    daily_melted = daily_df.melt(id_vars="date", value_vars=available_vars, var_name="variable", value_name="value")
+
+    # Plot with color as the variable name
     fig_daily = px.line(
-        daily_df, x="date", y=available_vars,
-        title=f"Daily averages in {selected_region} ({selected_month_name})"
+        daily_melted,
+        x="date", y="value", color="variable",
+        title=f"Daily Averages in {selected_region} ({selected_month_name})",
+        markers=True
     )
+
+    st.plotly_chart(fig_daily, use_container_width=True)
     st.markdown("Click on a point to see hourly trends for that date:")
     selected_points = plotly_events(fig_daily, click_event=True, select_event=False)
-    st.write("")  # Add space
 
     # hourly trend on clicked day
     if selected_points:
