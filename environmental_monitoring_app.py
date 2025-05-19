@@ -3,13 +3,8 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 import calendar
-#from streamlit_plotly_events import plotly_events
 
-# ------------------------------
-# Page Setup and Title Styling
-# ------------------------------
 st.set_page_config()
-#layout="wide"
 
 st.markdown("""
     <style>
@@ -37,7 +32,6 @@ df["date"] = df["timestamp"].dt.date
 df["hour"] = df["timestamp"].dt.hour
 df["month"] = df["timestamp"].dt.month
 
-# Rename variables for clarity
 rename_map = {
     'P2': 'PM2.5', 'humidity': 'Humidity', 'temperature': 'Temperature',
     'P1': 'PM10', 'P10': 'PM10', 'pressure': 'Pressure',
@@ -52,11 +46,9 @@ df["region"] = df["region"].replace(rename_items)
 # ------------------------------
 # Filter UI
 # ------------------------------
-#st.subheader("Filters")
 col1, col2 = st.columns(2)
-
 regions = df["region"].dropna().unique()
-selected_region = col1.multiselect("Select Region", sorted(regions), key="region_select")
+selected_regions = col1.multiselect("Select Region", sorted(regions), key="region_select")
 
 month_numbers = sorted(df["month"].dropna().unique())
 month_names = [calendar.month_name[int(m)] for m in month_numbers]
@@ -76,16 +68,16 @@ filtered_df = pd.DataFrame()
 pivot_df = pd.DataFrame()
 available_vars = []
 
-if selected_vars:
+if selected_vars and selected_regions:
     filtered_df = df[
-        (df["region"] == selected_region) &
+        (df["region"].isin(selected_regions)) &
         (df["month"] == selected_month) &
         (df["value_type"].isin(selected_vars))
     ]
 
     if not filtered_df.empty:
         pivot_df = filtered_df.pivot_table(
-            index=["timestamp", "date", "hour"],
+            index=["timestamp", "date", "hour", "region"],
             columns="value_type",
             values="value",
             aggfunc="mean"
@@ -96,37 +88,30 @@ if selected_vars:
 # --------------------------
 # Daily and Hourly Trend Charts
 # --------------------------
-# daily plot with click interaction
-#st.header("Daily trends")
 st.header("Daily and hourly trends")
 col1, col2 = st.columns(2)
 
-# --- Left Column: Daily Trend Chart ---
 with col1:
     if not pivot_df.empty:
-        daily_df = pivot_df.groupby("date")[available_vars].mean().reset_index()
+        daily_df = pivot_df.groupby(["date", "region"])[available_vars].mean().reset_index()
         fig = px.line(
             daily_df, x="date", y=available_vars,
-            title=f"Daily Averages in {selected_region} ({selected_month_name})"
+            color="region", title=f"Daily Averages in Selected Regions ({selected_month_name})"
         )
         st.plotly_chart(fig, use_container_width=True)
 
-# --- Right Column: Hourly Trend Chart with Date Selector ---
 with col2:
     if not pivot_df.empty:
-        # Add a date selector based on available dates
         unique_dates = pivot_df["date"].dropna().unique()
         selected_date = st.selectbox("Select a date for hourly trends", sorted(unique_dates))
-
-        # Filter and plot hourly data for selected date
-        hourly_df = pivot_df[pivot_df["date"] == selected_date].groupby("hour")[available_vars].mean().reset_index()
-
+        hourly_df = pivot_df[pivot_df["date"] == selected_date]
+        hourly_avg = hourly_df.groupby(["hour", "region"])[available_vars].mean().reset_index()
         fig_hourly = px.line(
-            hourly_df, x="hour", y=available_vars,
-            title=f"Hourly Averages on {selected_date}"
+            hourly_avg, x="hour", y=available_vars,
+            color="region", title=f"Hourly Averages on {selected_date}"
         )
         st.plotly_chart(fig_hourly, use_container_width=True)
-        
+
 # --------------------------
 # Anomaly Detection
 # --------------------------
@@ -134,7 +119,7 @@ st.subheader("Anomaly Detection")
 if not filtered_df.empty:
     fig_anomaly = px.box(
         filtered_df,
-        x="value_type", y="value",
+        x="value_type", y="value", color="region",
         title="Outlier Detection",
         points="outliers"
     )
@@ -148,7 +133,6 @@ else:
 # --------------------------
 st.subheader("Regional Comparison")
 compare_df = df[df["value_type"].isin(selected_vars)]
-
 if not compare_df.empty:
     region_avg = compare_df.groupby(["region", "value_type"])["value"].mean().reset_index()
     fig_compare = px.bar(
@@ -163,8 +147,7 @@ else:
 # --------------------------
 # Weather Correlation
 # --------------------------
-st.subheader("🌦️ Weather Correlation")
-
+st.subheader("Weather Correlation")
 if available_vars and not pivot_df.empty:
     corr_df = pivot_df[available_vars].dropna()
     if len(corr_df.columns) >= 2:
