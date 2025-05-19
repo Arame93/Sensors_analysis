@@ -107,10 +107,6 @@ if selected_vars:
     ).reset_index()
 
     available_vars = [v for v in selected_vars if v in pivot_df.columns]
-# --------------------------
-# Daily & Hourly Trends
-# --------------------------
-st.header("📊 Daily and Hourly Trends")
 
 # --------------------------
 # Daily & Hourly Trends
