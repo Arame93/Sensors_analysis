@@ -122,7 +122,7 @@ if not pivot_df.empty:
 
     # --- Left: Daily Trend
     with col1:
-        st.subheader("Daily Trend")
+        #st.subheader("Daily Trend")
         fig_daily = px.line(
             daily_melted,
             x="date", y="value", color="variable",
@@ -135,7 +135,7 @@ if not pivot_df.empty:
 
     # --- Right: Hourly Trend for Selected Date
     with col2:
-        st.subheader("Hourly Trend")
+        #st.subheader("Hourly Trend")
         if selected_points:
             selected_date_str = selected_points[0]['x']
             selected_date = pd.to_datetime(selected_date_str).date()
