@@ -105,7 +105,6 @@ if not pivot_df.empty:
         daily_df, x="date", y=available_vars,
         title=f"Daily averages in {selected_region} ({selected_month_name})"
     )
-    st.plotly_chart(fig_daily, use_container_width=True)
     st.markdown("Click on a point to see hourly trends for that date:")
     selected_points = plotly_events(fig_daily, click_event=True, select_event=False)
     st.write("")  # Add space
