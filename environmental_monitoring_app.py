@@ -180,7 +180,7 @@ if available_vars and not pivot_df.empty:
         )
         st.plotly_chart(fig_corr, use_container_width=True)
     else:
-        st.warning("Not enough data to compute correlation (need at least 2 variables without NaNs).")
+        st.warning("Not enough data to compute correlation (need at least 2 variables).")
 else:
     st.warning("Select at least two variables to see correlation heatmap.")
 
