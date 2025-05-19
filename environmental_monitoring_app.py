@@ -95,8 +95,6 @@ if selected_vars:
 # --------------------------
 # Daily and Hourly Trend Charts
 # --------------------------
-st.header("Daily and hourly trends")
-
 # daily plot with click interaction
 #st.header("Daily trends")
 st.header("Daily and hourly trends")
