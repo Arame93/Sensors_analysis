@@ -148,7 +148,24 @@ if not pivot_df.empty:
 # --------------------------
 # Anomaly Detection
 # --------------------------
-st.subheader("Anomaly Detection")
+#st.subheader("Anomaly Detection")
+st.markdown("""
+    <style>
+        .subtitle {
+            background-color: #f0f0f0;  /* light grey */
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            color: #333333;  /* dark grey text */
+            font-size: 20px;  /* smaller font size */
+            font-weight: normal;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+    </style>
+    <div class="subtitle">Anomaly Detection</div>
+""", unsafe_allow_html=True)
+
 if not filtered_df.empty:
     fig_anomaly = px.box(
         filtered_df,
