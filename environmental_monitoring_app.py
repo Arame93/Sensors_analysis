@@ -181,7 +181,23 @@ else:
 # --------------------------
 # Regional Comparison
 # --------------------------
-st.subheader("Regional Comparison")
+#st.subheader("Regional Comparison")
+st.markdown("""
+    <style>
+        .subtitle {
+            background-color: #f0f0f0;  /* light grey */
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            color: #333333;  /* dark grey text */
+            font-size: 20px;  /* smaller font size */
+            font-weight: normal;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+    </style>
+    <div class="subtitle">Regional Comparison</div>
+""", unsafe_allow_html=True)
 compare_df = df[df["value_type"].isin(selected_vars)]
 
 if not compare_df.empty:
@@ -198,7 +214,24 @@ else:
 # --------------------------
 # Weather Correlation
 # --------------------------
-st.subheader("🌦️ Weather Correlation")
+#st.subheader("🌦️ Weather Correlation")
+st.markdown("""
+    <style>
+        .subtitle {
+            background-color: #f0f0f0;  /* light grey */
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            color: #333333;  /* dark grey text */
+            font-size: 20px;  /* smaller font size */
+            font-weight: normal;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+    </style>
+    <div class="subtitle"> Variables Correlation</div>
+""", unsafe_allow_html=True)
+
 
 if available_vars and not pivot_df.empty:
     corr_df = pivot_df[available_vars].dropna()
