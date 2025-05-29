@@ -8,7 +8,7 @@ from streamlit_plotly_events import plotly_events
 # ------------------------------
 # Page Setup and Title Styling
 # ------------------------------
-st.set_page_config()
+st.set_page_config(layout="wide")
 #layout="wide"
 
 st.markdown("""
