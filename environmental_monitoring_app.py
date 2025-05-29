@@ -96,15 +96,18 @@ if selected_vars:
 # --------------------------
 # Map Visualization
 # --------------------------
+# --------------------------
+# Map Visualization
+# --------------------------
 st.markdown("""
     <style>
         .subtitle {
-            background-color: #f0f0f0;  /* light grey */
+            background-color: #f0f0f0;
             padding: 10px;
             border-radius: 8px;
             text-align: center;
-            color: #333333;  /* dark grey text */
-            font-size: 20px;  /* smaller font size */
+            color: #333333;
+            font-size: 20px;
             font-weight: normal;
             margin-top: 10px;
             margin-bottom: 20px;
@@ -118,34 +121,34 @@ if selected_vars:
 
     map_df = df[
         (df["value_type"] == map_var) &
-        (df["month"] == selected_month)
+        (df["month"] == selected_month) &
+        (df["lat"].notna()) & (df["lon"].notna())
     ].copy()
 
-    # Group by region to get average value and get latest coordinates
-    latest_map_df = map_df.groupby("region").agg({
+    # Group by region (mean value), keep the last known coordinates
+    map_agg = map_df.groupby("region").agg({
         "value": "mean",
         "lat": "last",
         "lon": "last"
     }).reset_index()
 
     fig_map = px.scatter_mapbox(
-        latest_map_df,
+        map_agg,
         lat="lat",
         lon="lon",
         size="value",
         color="value",
         color_continuous_scale="Viridis",
         size_max=30,
-        zoom=6,
+        zoom=5,
         hover_name="region",
-        title=f"{map_var} average by region (Month: {selected_month_name})",
+        title=f"{map_var} average by region - {selected_month_name}",
         mapbox_style="open-street-map"
     )
 
     st.plotly_chart(fig_map, use_container_width=True)
 else:
     st.info("Please select at least one variable to display the map.")
-
 
 # --------------------------
 # Daily and Hourly Trend Charts
