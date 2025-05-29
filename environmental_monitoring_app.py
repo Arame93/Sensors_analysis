@@ -94,10 +94,7 @@ if selected_vars:
         available_vars = [v for v in selected_vars if v in pivot_df.columns]
 
 # --------------------------
-# Map Visualization
-# --------------------------
-# --------------------------
-# Map Visualization
+# Map Visualization (All Regions, Filtered by Variable + Month)
 # --------------------------
 st.markdown("""
     <style>
@@ -113,42 +110,45 @@ st.markdown("""
             margin-bottom: 20px;
         }
     </style>
-    <div class="subtitle">Map Visualization by Variable</div>
+    <div class="subtitle">Map: Variable Values Across All Regions</div>
 """, unsafe_allow_html=True)
 
 if selected_vars:
-    map_var = st.selectbox("Select a variable to display on the map", selected_vars, key="map_var")
+    map_var = st.selectbox("Select variable to show on map", selected_vars, key="map_var")
 
     map_df = df[
         (df["value_type"] == map_var) &
         (df["month"] == selected_month) &
-        (df["lat"].notna()) & (df["lon"].notna())
+        (df["lat"].notna()) &
+        (df["lon"].notna())
     ].copy()
 
-    # Group by region (mean value), keep the last known coordinates
-    map_agg = map_df.groupby("region").agg({
-        "value": "mean",
-        "lat": "last",
-        "lon": "last"
-    }).reset_index()
+    if not map_df.empty:
+        # Aggregate average value by region
+        map_agg = map_df.groupby("region").agg({
+            "value": "mean",
+            "lat": "last",  # Or 'mean' if more accurate
+            "lon": "last"
+        }).reset_index()
 
-    fig_map = px.scatter_mapbox(
-        map_agg,
-        lat="lat",
-        lon="lon",
-        size="value",
-        color="value",
-        color_continuous_scale="Viridis",
-        size_max=30,
-        zoom=5,
-        hover_name="region",
-        title=f"{map_var} average by region - {selected_month_name}",
-        mapbox_style="open-street-map"
-    )
-
-    st.plotly_chart(fig_map, use_container_width=True)
+        fig_map = px.scatter_mapbox(
+            map_agg,
+            lat="lat",
+            lon="lon",
+            size="value",
+            color="value",
+            color_continuous_scale="Viridis",
+            size_max=30,
+            zoom=5,
+            hover_name="region",
+            title=f"{map_var} (avg) - {selected_month_name}",
+            mapbox_style="open-street-map"
+        )
+        st.plotly_chart(fig_map, use_container_width=True)
+    else:
+        st.info(f"No data available for {map_var} in {selected_month_name}.")
 else:
-    st.info("Please select at least one variable to display the map.")
+    st.info("Please select at least one variable to display on the map.")
 
 # --------------------------
 # Daily and Hourly Trend Charts
