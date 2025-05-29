@@ -93,59 +93,6 @@ if selected_vars:
 
         available_vars = [v for v in selected_vars if v in pivot_df.columns]
 
-# --------------------------
-# Map Visualization (Corrected: All Regions, Filtered by Variable + Month Only)
-# --------------------------
-st.markdown("""
-    <style>
-        .subtitle {
-            background-color: #f0f0f0;
-            padding: 10px;
-            border-radius: 8px;
-            text-align: center;
-            color: #333333;
-            font-size: 20px;
-            font-weight: normal;
-            margin-top: 10px;
-            margin-bottom: 20px;
-        }
-    </style>
-    <div class="subtitle">Map</div>
-""", unsafe_allow_html=True)
-
-if selected_vars:
-    map_var = st.selectbox("Select variable to show on map", selected_vars, key="map_var")
-
-    # Filter for selected variable and month (NOT region)
-    map_df = df[
-        (df["value_type"] == map_var) &
-        (df["month"] == selected_month) &
-        (df["lat"].notna()) &
-        (df["lon"].notna())
-    ].copy()
-
-    if not map_df.empty:
-        # Group by region and average the values
-        map_agg = map_df.groupby(["region", "lat", "lon"])["value"].mean().reset_index()
-
-        fig_map = px.scatter_mapbox(
-            map_agg,
-            lat="lat",
-            lon="lon",
-            size="value",
-            color="value",
-            color_continuous_scale="Viridis",
-            size_max=30,
-            zoom=5,
-            hover_name="region",
-            title=f"{map_var} - Average Values by Region ({selected_month_name})",
-            mapbox_style="open-street-map"
-        )
-        st.plotly_chart(fig_map, use_container_width=True)
-    else:
-        st.info(f"No data available for {map_var} in {selected_month_name}.")
-else:
-    st.info("Please select at least one variable to display on the map.")
 
 # --------------------------
 # Daily and Hourly Trend Charts
@@ -264,6 +211,61 @@ if not compare_df.empty:
     st.plotly_chart(fig_compare, use_container_width=True)
 else:
     st.info("No data available for regional comparison.")
+
+
+# --------------------------
+# Map of Selected Variable by Region (moved under Regional Comparison)
+# --------------------------
+st.markdown("""
+    <style>
+        .subtitle {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            color: #333333;
+            font-size: 20px;
+            font-weight: normal;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+    </style>
+    <div class="subtitle">Map of Selected Variable by Region</div>
+""", unsafe_allow_html=True)
+
+if selected_vars:
+    map_var = st.selectbox("Select variable to show on the map", selected_vars, key="map_var_final")
+
+    # Filter by month and variable only (NO selected_region!)
+    map_df = df[
+        (df["value_type"] == map_var) &
+        (df["month"] == selected_month) &
+        (df["lat"].notna()) & (df["lon"].notna())
+    ].copy()
+
+    if not map_df.empty:
+        # Group by region and compute mean value
+        map_agg = map_df.groupby(["region", "lat", "lon"])["value"].mean().reset_index()
+
+        fig_map = px.scatter_mapbox(
+            map_agg,
+            lat="lat",
+            lon="lon",
+            size="value",
+            color="value",
+            color_continuous_scale="Viridis",
+            size_max=30,
+            zoom=5,
+            hover_name="region",
+            title=f"{map_var} - Average Values by Region ({selected_month_name})",
+            mapbox_style="open-street-map"
+        )
+        st.plotly_chart(fig_map, use_container_width=True)
+    else:
+        st.info(f"No map data available for {map_var} in {selected_month_name}.")
+else:
+    st.info("Please select at least one variable to show the map.")
+
 
 # --------------------------
 # Weather Correlation
