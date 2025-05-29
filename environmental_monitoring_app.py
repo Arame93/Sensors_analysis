@@ -94,7 +94,7 @@ if selected_vars:
         available_vars = [v for v in selected_vars if v in pivot_df.columns]
 
 # --------------------------
-# Map Visualization (All Regions, Filtered by Variable + Month)
+# Map Visualization (Corrected: All Regions, Filtered by Variable + Month Only)
 # --------------------------
 st.markdown("""
     <style>
@@ -110,12 +110,13 @@ st.markdown("""
             margin-bottom: 20px;
         }
     </style>
-    <div class="subtitle">Map: Variable Values Across All Regions</div>
+    <div class="subtitle">Map</div>
 """, unsafe_allow_html=True)
 
 if selected_vars:
     map_var = st.selectbox("Select variable to show on map", selected_vars, key="map_var")
 
+    # Filter for selected variable and month (NOT region)
     map_df = df[
         (df["value_type"] == map_var) &
         (df["month"] == selected_month) &
@@ -124,12 +125,8 @@ if selected_vars:
     ].copy()
 
     if not map_df.empty:
-        # Aggregate average value by region
-        map_agg = map_df.groupby("region").agg({
-            "value": "mean",
-            "lat": "last",  # Or 'mean' if more accurate
-            "lon": "last"
-        }).reset_index()
+        # Group by region and average the values
+        map_agg = map_df.groupby(["region", "lat", "lon"])["value"].mean().reset_index()
 
         fig_map = px.scatter_mapbox(
             map_agg,
@@ -141,7 +138,7 @@ if selected_vars:
             size_max=30,
             zoom=5,
             hover_name="region",
-            title=f"{map_var} (avg) - {selected_month_name}",
+            title=f"{map_var} - Average Values by Region ({selected_month_name})",
             mapbox_style="open-street-map"
         )
         st.plotly_chart(fig_map, use_container_width=True)
