@@ -94,6 +94,60 @@ if selected_vars:
         available_vars = [v for v in selected_vars if v in pivot_df.columns]
 
 # --------------------------
+# Map Visualization
+# --------------------------
+st.markdown("""
+    <style>
+        .subtitle {
+            background-color: #f0f0f0;  /* light grey */
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            color: #333333;  /* dark grey text */
+            font-size: 20px;  /* smaller font size */
+            font-weight: normal;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+    </style>
+    <div class="subtitle">Map Visualization by Variable</div>
+""", unsafe_allow_html=True)
+
+if selected_vars:
+    map_var = st.selectbox("Select a variable to display on the map", selected_vars, key="map_var")
+
+    map_df = df[
+        (df["value_type"] == map_var) &
+        (df["month"] == selected_month)
+    ].copy()
+
+    # Group by region to get average value and get latest coordinates
+    latest_map_df = map_df.groupby("region").agg({
+        "value": "mean",
+        "lat": "last",
+        "lon": "last"
+    }).reset_index()
+
+    fig_map = px.scatter_mapbox(
+        latest_map_df,
+        lat="lat",
+        lon="lon",
+        size="value",
+        color="value",
+        color_continuous_scale="Viridis",
+        size_max=30,
+        zoom=6,
+        hover_name="region",
+        title=f"{map_var} average by region (Month: {selected_month_name})",
+        mapbox_style="open-street-map"
+    )
+
+    st.plotly_chart(fig_map, use_container_width=True)
+else:
+    st.info("Please select at least one variable to display the map.")
+
+
+# --------------------------
 # Daily and Hourly Trend Charts
 # --------------------------
 # daily plot with click interaction
