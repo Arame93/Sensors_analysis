@@ -100,82 +100,64 @@ if selected_vars:
 # --------------------------
 # Map of Selected Variable by Region
 # --------------------------
-# --------------------------
-# Regional Map of Variable Values
-# --------------------------
-st.markdown("""
-    <style>
-        .subtitle {
-            background-color: #f0f0f0;
-            padding: 10px;
-            border-radius: 8px;
-            text-align: center;
-            color: #333333;
-            font-size: 20px;
-            font-weight: normal;
-            margin-top: 10px;
-            margin-bottom: 20px;
-        }
-    </style>
-    <div class="subtitle">Regional Map of Variable</div>
-""", unsafe_allow_html=True)
-
 if selected_vars:
-    map_var = st.selectbox("Select variable to show on the map", selected_vars, index=selected_vars.index("PM2.5") if "PM2.5" in selected_vars else 0, key="map_var_final")
-
+    map_var = st.selectbox("Select variable to show on the map", selected_vars, key="map_var_final")
     map_df = df[
         (df["value_type"] == map_var) &
         (df["month"] == selected_month) &
         (df["lat"].notna()) & (df["lon"].notna())
     ].copy()
-
-    if not map_df.empty:
-        map_agg = map_df.groupby(["region", "lat", "lon"])["value"].mean().reset_index()
-
-        lat_center = map_agg["lat"].mean()
-        lon_center = map_agg["lon"].mean()
-
-        def calculate_zoom(lat_range, lon_range):
-            max_range = max(lat_range, lon_range)
-            if max_range == 0:
-                return 10
-            zoom = math.log2(360 / max_range) - 1
-            return max(1, min(15, int(zoom)))
-
-        lat_range = map_agg["lat"].max() - map_agg["lat"].min()
-        lon_range = map_agg["lon"].max() - map_agg["lon"].min()
-        zoom_level = calculate_zoom(lat_range * 1.2, lon_range * 1.2)
-
-        fig_map = px.scatter_mapbox(
-            map_agg,
-            lat="lat",
-            lon="lon",
-            size="value",
-            color="value",
-            color_continuous_scale="Reds",
-            size_max=20,
-            zoom=zoom_level,
-            center={"lat": lat_center, "lon": lon_center},
-            hover_name="region",
-            hover_data={"value": ":.2f"},
-            title=f"{map_var} - Average Values by Region ({selected_month_name})",
-            mapbox_style="carto-positron"
-        )
-
-        fig_map.update_layout(
-            height=600,
-            margin={"r": 0, "t": 40, "l": 0, "b": 0},
-            title_font_size=16,
-            title_x=0.5
-        )
-
-        st.plotly_chart(fig_map, use_container_width=True)
-    else:
-        st.warning("No data available to display the map.")
-else:
-    st.info("Please select at least one variable to display the map.")
+    
+if not map_df.empty:
+    map_agg = map_df.groupby(["region", "lat", "lon"])["value"].mean().reset_index()
 
 
+    lat_center = map_agg["lat"].mean()
+    lon_center = map_agg["lon"].mean()
+    
+    import math
+    
+    def calculate_zoom(lat_range, lon_range):
+        # Formule approximative pour calculer le zoom optimal
+        max_range = max(lat_range, lon_range)
+        if max_range == 0:
+            return 10
+        zoom = math.log2(360 / max_range) - 1
+        return max(1, min(15, int(zoom)))  
+    
+    lat_range = map_agg["lat"].max() - map_agg["lat"].min()
+    lon_range = map_agg["lon"].max() - map_agg["lon"].min()
+    
+    lat_range *= 1.2
+    lon_range *= 1.2
+    
+    zoom_level = calculate_zoom(lat_range, lon_range)
+
+    fig_map = px.scatter_mapbox(
+        map_agg,
+        lat="lat",
+        lon="lon",
+        size="value",
+        color="value",
+        color_continuous_scale="Reds",  
+        size_max=20,
+        zoom=zoom_level,
+        center={"lat": lat_center, "lon": lon_center},
+        hover_name="region",
+        hover_data={"value": ":.2f"},  
+        title=f"{map_var} - Average Values by Region ({selected_month_name})",
+        #mapbox_style="carto-darkmatter"
+        mapbox_style="carto-positron"
+    )
+    
+    fig_map.update_layout(
+        height=600,
+        margin={"r":0,"t":40,"l":0,"b":0},
+        title_font_size=16,
+        title_x=0.5  
+    )
+    
+    st.plotly_chart(fig_map, use_container_width=True)
 # --------------------------
 # Daily and Hourly Trend Charts
 # --------------------------
