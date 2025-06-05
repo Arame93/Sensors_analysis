@@ -253,7 +253,7 @@ if selected_vars:
         m = folium.Map(
             location=[lat_center, lon_center],
             zoom_start=6,
-            tiles='CartoDB positron'
+            tiles='OpenStreetMap'
         )
         
         for _, row in map_agg.iterrows():  
