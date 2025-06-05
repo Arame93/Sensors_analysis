@@ -229,11 +229,10 @@ if selected_vars:
 if not map_df.empty:
     map_agg = map_df.groupby(["region", "lat", "lon"])["value"].mean().reset_index()
 
-    # Centre de la carte
+
     lat_center = map_agg["lat"].mean()
     lon_center = map_agg["lon"].mean()
     
-    # Calcul plus précis du zoom
     import math
     
     def calculate_zoom(lat_range, lon_range):
@@ -242,12 +241,11 @@ if not map_df.empty:
         if max_range == 0:
             return 10
         zoom = math.log2(360 / max_range) - 1
-        return max(1, min(15, int(zoom)))  # Limiter entre 1 et 15
+        return max(1, min(15, int(zoom)))  
     
     lat_range = map_agg["lat"].max() - map_agg["lat"].min()
     lon_range = map_agg["lon"].max() - map_agg["lon"].min()
     
-    # Ajouter une petite marge pour ne pas que les points touchent les bords
     lat_range *= 1.2
     lon_range *= 1.2
     
@@ -259,21 +257,22 @@ if not map_df.empty:
         lon="lon",
         size="value",
         color="value",
-        color_continuous_scale="Plasma",  # Autre palette qui ressort bien sur fond sombre
-        size_max=35,
+        color_continuous_scale="Reds",  
+        size_max=20,
         zoom=zoom_level,
         center={"lat": lat_center, "lon": lon_center},
         hover_name="region",
-        hover_data={"value": ":.2f"},  # Afficher la valeur avec 2 décimales
+        hover_data={"value": ":.2f"},  
         title=f"{map_var} - Average Values by Region ({selected_month_name})",
-        mapbox_style="carto-darkmatter"  # Style sombre
+        #mapbox_style="carto-darkmatter"
+        mapbox_style="carto-positron"
     )
     
     fig_map.update_layout(
         height=600,
         margin={"r":0,"t":40,"l":0,"b":0},
         title_font_size=16,
-        title_x=0.5  # Centrer le titre
+        title_x=0.5  
     )
     
     st.plotly_chart(fig_map, use_container_width=True)
