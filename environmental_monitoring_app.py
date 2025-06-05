@@ -226,56 +226,57 @@ if selected_vars:
         (df["lat"].notna()) & (df["lon"].notna())
     ].copy()
     
-    if not map_df.empty:
-        map_agg = map_df.groupby(["region", "lat", "lon"])["value"].mean().reset_index()
-        
-        # Calculer le centre et les limites pour le zoom automatique
-        lat_center = map_agg["lat"].mean()
-        lon_center = map_agg["lon"].mean()
-        
-        # Créer la carte
-        m = folium.Map(
-            location=[lat_center, lon_center],
-            tiles='CartoDB dark_matter'  
-        )
-        
-        lat_min, lat_max = map_agg["lat"].min(), map_agg["lat"].max()
-        lon_min, lon_max = map_agg["lon"].min(), map_agg["lon"].max()
-        m.fit_bounds([[lat_min, lon_min], [lat_max, lon_max]], padding=[20, 20])
-        
-        max_val = map_agg['value'].max()
-        min_val = map_agg['value'].min()
-        
-        for _, row in map_agg.iterrows():
-           
-            radius = (row['value'] / max_val) * 10 + 8
-            
-            # Couleur basée sur la valeur (du vert au rouge)
-            normalized_val = (row['value'] - min_val) / (max_val - min_val) if max_val != min_val else 0
-            
-            if normalized_val < 0.5:
-                color = 'green'
-                fillColor = 'lightgreen'
-            else:
-                color = 'red'
-                fillColor = 'orange'
-            
-            # Popup simple avec juste région et valeur
-            popup_text = f"{row['region']}: {row['value']:.2f}"
-            
-            folium.CircleMarker(
-                location=[row['lat'], row['lon']],
-                radius=radius,
-                popup=popup_text, 
-                tooltip=popup_text, 
-                color=color,
-                fill=True,
-                fillColor=fillColor,
-                fillOpacity=0.7,
-                weight=2
-            ).add_to(m)
-        
-        st_folium(m, width=1500, height=500)
+if not map_df.empty:
+    map_agg = map_df.groupby(["region", "lat", "lon"])["value"].mean().reset_index()
+
+    # Centre de la carte
+    lat_center = map_agg["lat"].mean()
+    lon_center = map_agg["lon"].mean()
+    
+    # Calcul plus précis du zoom
+    import math
+    
+    def calculate_zoom(lat_range, lon_range):
+        # Formule approximative pour calculer le zoom optimal
+        max_range = max(lat_range, lon_range)
+        if max_range == 0:
+            return 10
+        zoom = math.log2(360 / max_range) - 1
+        return max(1, min(15, int(zoom)))  # Limiter entre 1 et 15
+    
+    lat_range = map_agg["lat"].max() - map_agg["lat"].min()
+    lon_range = map_agg["lon"].max() - map_agg["lon"].min()
+    
+    # Ajouter une petite marge pour ne pas que les points touchent les bords
+    lat_range *= 1.2
+    lon_range *= 1.2
+    
+    zoom_level = calculate_zoom(lat_range, lon_range)
+
+    fig_map = px.scatter_mapbox(
+        map_agg,
+        lat="lat",
+        lon="lon",
+        size="value",
+        color="value",
+        color_continuous_scale="Plasma",  # Autre palette qui ressort bien sur fond sombre
+        size_max=35,
+        zoom=zoom_level,
+        center={"lat": lat_center, "lon": lon_center},
+        hover_name="region",
+        hover_data={"value": ":.2f"},  # Afficher la valeur avec 2 décimales
+        title=f"{map_var} - Average Values by Region ({selected_month_name})",
+        mapbox_style="carto-darkmatter"  # Style sombre
+    )
+    
+    fig_map.update_layout(
+        height=600,
+        margin={"r":0,"t":40,"l":0,"b":0},
+        title_font_size=16,
+        title_x=0.5  # Centrer le titre
+    )
+    
+    st.plotly_chart(fig_map, use_container_width=True)
 # --------------------------
 # Weather Correlation
 # --------------------------
