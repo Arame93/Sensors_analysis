@@ -274,41 +274,6 @@ if not map_df.empty:
     # Afficher dans Streamlit
     st_folium(m, width=700, height=500)
 
-# Solution 2: Pydeck avec OpenStreetMap
-import pydeck as pdk
-
-if not map_df.empty:
-    map_agg = map_df.groupby(["region", "lat", "lon"])["value"].mean().reset_index()
-    
-    # Normaliser les valeurs
-    map_agg["normalized_value"] = (map_agg["value"] - map_agg["value"].min()) / (map_agg["value"].max() - map_agg["value"].min())
-    
-    layer = pdk.Layer(
-        "ScatterplotLayer",
-        data=map_agg,
-        get_position=["lon", "lat"],
-        get_radius="normalized_value * 2000 + 500",
-        get_color="[255, 0, 0, 180]",  # Rouge
-        pickable=True,
-    )
-    
-    view_state = pdk.ViewState(
-        latitude=map_agg["lat"].mean(),
-        longitude=map_agg["lon"].mean(),
-        zoom=6,
-        pitch=0,
-    )
-    
-    # Pydeck utilise automatiquement OpenStreetMap !
-    deck = pdk.Deck(
-        layers=[layer],
-        initial_view_state=view_state,
-        tooltip={"text": "Region: {region}\nValue: {value}"},
-        map_style="road"  # Style route basé sur OSM
-    )
-    
-    st.pydeck_chart(deck)
-
 # --------------------------
 # Weather Correlation
 # --------------------------
