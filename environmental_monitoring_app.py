@@ -232,6 +232,14 @@ st.markdown("""
     </style>
     <div class="subtitle">Map of Selected Variable by Region</div>
 """, unsafe_allow_html=True)
+if selected_vars:
+    map_var = st.selectbox("Select variable to show on the map", selected_vars, key="map_var_final")
+
+    map_df = df[
+        (df["value_type"] == map_var) &
+        (df["month"] == selected_month) &
+        (df["lat"].notna()) & (df["lon"].notna())
+    ].copy()
 
 if not map_df.empty:
     map_agg = map_df.groupby(["region", "lat", "lon"])["value"].mean().reset_index()
@@ -250,7 +258,6 @@ if not map_df.empty:
         mapbox_style="carto-positron"  # Utilise carto au lieu d'open-street-map
     )
     st.plotly_chart(fig_map, use_container_width=True)
-
 
 # --------------------------
 # Weather Correlation
