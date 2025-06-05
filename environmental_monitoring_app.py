@@ -218,6 +218,15 @@ else:
 # --------------------------
 # Map of Selected Variable by Region (moved under Regional Comparison)
 # --------------------------
+if selected_vars:
+    map_var = st.selectbox("Select variable to show on the map", selected_vars, key="map_var_final")
+
+    map_df = df[
+        (df["value_type"] == map_var) &
+        (df["month"] == selected_month) &
+        (df["lat"].notna()) & (df["lon"].notna())
+    ].copy()
+    
 if not map_df.empty:
     map_agg = map_df.groupby(["region", "lat", "lon"])["value"].mean().reset_index()
     
