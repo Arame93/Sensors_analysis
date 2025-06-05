@@ -237,20 +237,20 @@ if not map_df.empty:
     # Créer la carte
     m = folium.Map(
         location=[lat_center, lon_center],
-        tiles='CartoDB dark_matter'  # Tu peux changer le style ici
+        tiles='CartoDB dark_matter'  
     )
     
-    # Ajuster automatiquement le zoom pour voir tous les points
+    
     lat_min, lat_max = map_agg["lat"].min(), map_agg["lat"].max()
     lon_min, lon_max = map_agg["lon"].min(), map_agg["lon"].max()
     m.fit_bounds([[lat_min, lon_min], [lat_max, lon_max]], padding=[20, 20])
     
-    # Normaliser les valeurs pour les tailles des cercles
+
     max_val = map_agg['value'].max()
     min_val = map_agg['value'].min()
     
     for _, row in map_agg.iterrows():
-        # Taille du cercle basée sur la valeur
+       
         radius = (row['value'] / max_val) * 10 + 8
         
         # Couleur basée sur la valeur (du vert au rouge)
@@ -269,8 +269,8 @@ if not map_df.empty:
         folium.CircleMarker(
             location=[row['lat'], row['lon']],
             radius=radius,
-            popup=popup_text,  # Popup simple
-            tooltip=popup_text,  # Même info au survol
+            popup=popup_text, 
+            tooltip=popup_text, 
             color=color,
             fill=True,
             fillColor=fillColor,
@@ -279,7 +279,7 @@ if not map_df.empty:
         ).add_to(m)
     
     # Afficher la carte
-    st_folium(m, width=1000, height=500)
+    st_folium(m, width=1200, height=500)
 # --------------------------
 # Weather Correlation
 # --------------------------
