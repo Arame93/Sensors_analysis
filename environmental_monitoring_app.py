@@ -251,7 +251,7 @@ if not map_df.empty:
     
     for _, row in map_agg.iterrows():
         # Taille du cercle basée sur la valeur
-        radius = (row['value'] / max_val) * 20 + 8
+        radius = (row['value'] / max_val) * 10 + 8
         
         # Couleur basée sur la valeur (du vert au rouge)
         normalized_val = (row['value'] - min_val) / (max_val - min_val) if max_val != min_val else 0
@@ -279,7 +279,7 @@ if not map_df.empty:
         ).add_to(m)
     
     # Afficher la carte
-    st_folium(m, width=700, height=500)
+    st_folium(m, width=1000, height=500)
 # --------------------------
 # Weather Correlation
 # --------------------------
