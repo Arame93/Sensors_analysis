@@ -233,38 +233,23 @@ st.markdown("""
     <div class="subtitle">Map of Selected Variable by Region</div>
 """, unsafe_allow_html=True)
 
-if selected_vars:
-    map_var = st.selectbox("Select variable to show on the map", selected_vars, key="map_var_final")
+if not map_df.empty:
+    map_agg = map_df.groupby(["region", "lat", "lon"])["value"].mean().reset_index()
 
-    # Filter by month and variable only (NO selected_region!)
-    map_df = df[
-        (df["value_type"] == map_var) &
-        (df["month"] == selected_month) &
-        (df["lat"].notna()) & (df["lon"].notna())
-    ].copy()
-
-    if not map_df.empty:
-        # Group by region and compute mean value
-        map_agg = map_df.groupby(["region", "lat", "lon"])["value"].mean().reset_index()
-
-        fig_map = px.scatter_mapbox(
-            map_agg,
-            lat="lat",
-            lon="lon",
-            size="value",
-            color="value",
-            color_continuous_scale="Viridis",
-            size_max=30,
-            zoom=5,
-            hover_name="region",
-            title=f"{map_var} - Average Values by Region ({selected_month_name})",
-            mapbox_style="open-street-map"
-        )
-        st.plotly_chart(fig_map, use_container_width=True)
-    else:
-        st.info(f"No map data available for {map_var} in {selected_month_name}.")
-else:
-    st.info("Please select at least one variable to show the map.")
+    fig_map = px.scatter_mapbox(
+        map_agg,
+        lat="lat",
+        lon="lon",
+        size="value",
+        color="value",
+        color_continuous_scale="Viridis",
+        size_max=30,
+        zoom=5,
+        hover_name="region",
+        title=f"{map_var} - Average Values by Region ({selected_month_name})",
+        mapbox_style="carto-positron"  # Utilise carto au lieu d'open-street-map
+    )
+    st.plotly_chart(fig_map, use_container_width=True)
 
 
 # --------------------------
