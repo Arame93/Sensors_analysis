@@ -244,34 +244,59 @@ if selected_vars:
         (df["lat"].notna()) & (df["lon"].notna())
     ].copy()
     
-    if not map_df.empty:  # Indentation corrigée
-        map_agg = map_df.groupby(["region", "lat", "lon"])["value"].mean().reset_index()
+    if not map_df.empty:
+    map_agg = map_df.groupby(["region", "lat", "lon"])["value"].mean().reset_index()
+    
+   
+    lat_center = map_agg["lat"].mean()
+    lon_center = map_agg["lon"].mean()
+    
+    # Create the map
+    m = folium.Map(
+        location=[lat_center, lon_center],
+        tiles='CartoDB dark_matter'  # Tu peux changer le style ici
+    )
+    
+   
+    lat_min, lat_max = map_agg["lat"].min(), map_agg["lat"].max()
+    lon_min, lon_max = map_agg["lon"].min(), map_agg["lon"].max()
+    m.fit_bounds([[lat_min, lon_min], [lat_max, lon_max]], padding=[20, 20])
+    
+    
+    max_val = map_agg['value'].max()
+    min_val = map_agg['value'].min()
+    
+    for _, row in map_agg.iterrows():
+       
+        radius = (row['value'] / max_val) * 20 + 8
         
-        lat_center = map_agg["lat"].mean()
-        lon_center = map_agg["lon"].mean()
+        # Couleur basée sur la valeur (du vert au rouge)
+        normalized_val = (row['value'] - min_val) / (max_val - min_val) if max_val != min_val else 0
         
-        m = folium.Map(
-            location=[lat_center, lon_center],
-            zoom_start=6,
-            tiles='OpenStreetMap'
-        )
+        if normalized_val < 0.5:
+            color = 'green'
+            fillColor = 'lightgreen'
+        else:
+            color = 'red'
+            fillColor = 'orange'
         
-        for _, row in map_agg.iterrows():  
-            # Taille du cercle basée sur la valeur
-            radius = row['value'] / map_agg['value'].max() * 20 + 5
-            
-            folium.CircleMarker(
-                location=[row['lat'], row['lon']],
-                radius=radius,
-                popup=f"{row['region']}: {row['value']:.2f}",
-                color='red',
-                fill=True,
-                fillColor='red',
-                fillOpacity=0.6
-            ).add_to(m)
+        # Popup simple avec juste région et valeur
+        popup_text = f"{row['region']}: {row['value']:.2f}"
         
-        # Afficher dans Streamlit
-        st_folium(m, width=700, height=500)
+        folium.CircleMarker(
+            location=[row['lat'], row['lon']],
+            radius=radius,
+            popup=popup_text,  # Popup simple
+            tooltip=popup_text,  # Même info au survol
+            color=color,
+            fill=True,
+            fillColor=fillColor,
+            fillOpacity=0.7,
+            weight=2
+        ).add_to(m)
+    
+    # Afficher la carte
+    st_folium(m, width=700, height=500)
     else:
         st.info(f"No map data available for {map_var} in {selected_month_name}.")
 else:
