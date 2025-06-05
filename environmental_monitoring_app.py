@@ -253,10 +253,10 @@ if selected_vars:
         m = folium.Map(
             location=[lat_center, lon_center],
             zoom_start=6,
-            tiles='OpenStreetMap'
+            tiles='CartoDB positron'
         )
         
-        for _, row in map_agg.iterrows():  # Underscore corrigé et variable corrigée
+        for _, row in map_agg.iterrows():  
             # Taille du cercle basée sur la valeur
             radius = row['value'] / map_agg['value'].max() * 20 + 5
             
