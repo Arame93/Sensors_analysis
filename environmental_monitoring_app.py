@@ -58,7 +58,7 @@ col1, col2 = st.columns(2)
 # Ajouter "All" aux options de régions
 regions = df["region"].dropna().unique()
 region_options = ['All'] + sorted(regions)
-selected_region = col1.selectbox("Select Region", region_options, key="region_select")
+selected_region = col1.selectbox("Select Region", region_options, index=0, key="region_select")
 
 # Si "All" est sélectionné, utiliser toutes les régions
 if selected_region == 'All':
@@ -98,7 +98,8 @@ if selected_vars:
         <div class="subtitle">Geographic Visualization</div>
     """, unsafe_allow_html=True)
     
-    map_var = st.selectbox("Select variable to show on the map", selected_vars, key="map_var_final")
+    # Utiliser la première variable sélectionnée pour la carte
+    map_var = selected_vars[0]
     
     # Filtrer les données selon les filtres principaux
     map_df = df[
@@ -166,18 +167,16 @@ pivot_df = pd.DataFrame()
 available_vars = []
 
 if selected_vars:
-    # Filtrer selon la sélection de région (pour les graphiques détaillés, on garde une seule région)
-    region_for_details = selected_region if selected_region != 'All' else final_selected_regions[0]
-    
+    # Utiliser toutes les régions sélectionnées pour tous les graphiques
     filtered_df = df[
-        (df["region"] == region_for_details) &
+        (df["region"].isin(final_selected_regions)) &
         (df["month"] == selected_month) &
         (df["value_type"].isin(selected_vars))
     ]
 
     if not filtered_df.empty:
         pivot_df = filtered_df.pivot_table(
-            index=["timestamp", "date", "hour"],
+            index=["timestamp", "date", "hour", "region"],
             columns="value_type",
             values="value",
             aggfunc="mean"
@@ -206,24 +205,44 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 if not pivot_df.empty:
-    # Daily trends
-    daily_df = pivot_df.groupby("date")[available_vars].mean().reset_index()
+    # Daily trends - moyenne par région et date
+    daily_df = pivot_df.groupby(["date", "region"])[available_vars].mean().reset_index()
+    
+    # Créer un graphique avec une ligne par région
     fig = px.line(
-        daily_df, x="date", y=available_vars,
-        title=f"Daily Averages in {region_for_details} ({selected_month_name})"
+        daily_df, x="date", y=available_vars[0] if available_vars else None,
+        color="region",
+        title=f"Daily Averages by Region ({selected_month_name})"
     )
+    
+    # Ajouter les autres variables si disponibles
+    for var in available_vars[1:]:
+        fig_var = px.line(daily_df, x="date", y=var, color="region")
+        for trace in fig_var.data:
+            trace.name = f"{trace.name} - {var}"
+            fig.add_trace(trace)
+    
     st.plotly_chart(fig, use_container_width=True)
 
     # Hourly trends with date selector
     unique_dates = pivot_df["date"].dropna().unique()
     selected_date = st.selectbox("Select a date for hourly trends", sorted(unique_dates))
 
-    hourly_df = pivot_df[pivot_df["date"] == selected_date].groupby("hour")[available_vars].mean().reset_index()
+    hourly_df = pivot_df[pivot_df["date"] == selected_date].groupby(["hour", "region"])[available_vars].mean().reset_index()
 
     fig_hourly = px.line(
-        hourly_df, x="hour", y=available_vars,
-        title=f"Hourly Averages on {selected_date}"
+        hourly_df, x="hour", y=available_vars[0] if available_vars else None,
+        color="region",
+        title=f"Hourly Averages on {selected_date} by Region"
     )
+    
+    # Ajouter les autres variables si disponibles
+    for var in available_vars[1:]:
+        fig_var = px.line(hourly_df, x="hour", y=var, color="region")
+        for trace in fig_var.data:
+            trace.name = f"{trace.name} - {var}"
+            fig_hourly.add_trace(trace)
+    
     st.plotly_chart(fig_hourly, use_container_width=True)
 else:
     st.info("Please select variables and ensure data is available for detailed trends.")
@@ -252,7 +271,8 @@ if not filtered_df.empty:
     fig_anomaly = px.box(
         filtered_df,
         x="value_type", y="value",
-        title=f"Outlier Detection - {region_for_details}",
+        color="region",
+        title="Outlier Detection by Region",
         points="outliers"
     )
     fig_anomaly.update_layout(xaxis_title=None)
@@ -281,18 +301,24 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 if available_vars and not pivot_df.empty:
-    corr_df = pivot_df[available_vars].dropna()
-    if len(corr_df.columns) >= 2:
-        corr_matrix = corr_df.corr()
-        fig_corr = px.imshow(
-            corr_matrix,
-            text_auto=True,
-            color_continuous_scale="RdBu_r",
-            title=f"Correlation Heatmap - {region_for_details}",
-            labels=dict(color="Correlation"),
-            aspect="auto"
-        )
-        st.plotly_chart(fig_corr, use_container_width=True)
+    # Créer une corrélation pour chaque région
+    regions_in_data = pivot_df["region"].unique()
+    
+    if len(available_vars) >= 2:
+        for region in regions_in_data:
+            region_data = pivot_df[pivot_df["region"] == region][available_vars].dropna()
+            
+            if len(region_data) > 1:
+                corr_matrix = region_data.corr()
+                fig_corr = px.imshow(
+                    corr_matrix,
+                    text_auto=True,
+                    color_continuous_scale="RdBu_r",
+                    title=f"Correlation Heatmap - {region}",
+                    labels=dict(color="Correlation"),
+                    aspect="auto"
+                )
+                st.plotly_chart(fig_corr, use_container_width=True)
     else:
         st.warning("Not enough variables selected to compute correlation.")
 else:
