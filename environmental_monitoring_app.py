@@ -220,65 +220,62 @@ else:
 # --------------------------
 if selected_vars:
     map_var = st.selectbox("Select variable to show on the map", selected_vars, key="map_var_final")
-
     map_df = df[
         (df["value_type"] == map_var) &
         (df["month"] == selected_month) &
         (df["lat"].notna()) & (df["lon"].notna())
     ].copy()
     
-if not map_df.empty:
-    map_agg = map_df.groupby(["region", "lat", "lon"])["value"].mean().reset_index()
-    
-    # Calculer le centre et les limites pour le zoom automatique
-    lat_center = map_agg["lat"].mean()
-    lon_center = map_agg["lon"].mean()
-    
-    # Créer la carte
-    m = folium.Map(
-        location=[lat_center, lon_center],
-        tiles='CartoDB dark_matter'  
-    )
-    
-    
-    lat_min, lat_max = map_agg["lat"].min(), map_agg["lat"].max()
-    lon_min, lon_max = map_agg["lon"].min(), map_agg["lon"].max()
-    m.fit_bounds([[lat_min, lon_min], [lat_max, lon_max]], padding=[20, 20])
-    
-
-    max_val = map_agg['value'].max()
-    min_val = map_agg['value'].min()
-    
-    for _, row in map_agg.iterrows():
-       
-        radius = (row['value'] / max_val) * 10 + 8
+    if not map_df.empty:
+        map_agg = map_df.groupby(["region", "lat", "lon"])["value"].mean().reset_index()
         
-        # Couleur basée sur la valeur (du vert au rouge)
-        normalized_val = (row['value'] - min_val) / (max_val - min_val) if max_val != min_val else 0
+        # Calculer le centre et les limites pour le zoom automatique
+        lat_center = map_agg["lat"].mean()
+        lon_center = map_agg["lon"].mean()
         
-        if normalized_val < 0.5:
-            color = 'green'
-            fillColor = 'lightgreen'
-        else:
-            color = 'red'
-            fillColor = 'orange'
+        # Créer la carte
+        m = folium.Map(
+            location=[lat_center, lon_center],
+            tiles='CartoDB dark_matter'  
+        )
         
-        # Popup simple avec juste région et valeur
-        popup_text = f"{row['region']}: {row['value']:.2f}"
+        lat_min, lat_max = map_agg["lat"].min(), map_agg["lat"].max()
+        lon_min, lon_max = map_agg["lon"].min(), map_agg["lon"].max()
+        m.fit_bounds([[lat_min, lon_min], [lat_max, lon_max]], padding=[20, 20])
         
-        folium.CircleMarker(
-            location=[row['lat'], row['lon']],
-            radius=radius,
-            popup=popup_text, 
-            tooltip=popup_text, 
-            color=color,
-            fill=True,
-            fillColor=fillColor,
-            fillOpacity=0.7,
-            weight=2
-        ).add_to(m)
-    
-    st_folium(m, width=1500, height=500)
+        max_val = map_agg['value'].max()
+        min_val = map_agg['value'].min()
+        
+        for _, row in map_agg.iterrows():
+           
+            radius = (row['value'] / max_val) * 10 + 8
+            
+            # Couleur basée sur la valeur (du vert au rouge)
+            normalized_val = (row['value'] - min_val) / (max_val - min_val) if max_val != min_val else 0
+            
+            if normalized_val < 0.5:
+                color = 'green'
+                fillColor = 'lightgreen'
+            else:
+                color = 'red'
+                fillColor = 'orange'
+            
+            # Popup simple avec juste région et valeur
+            popup_text = f"{row['region']}: {row['value']:.2f}"
+            
+            folium.CircleMarker(
+                location=[row['lat'], row['lon']],
+                radius=radius,
+                popup=popup_text, 
+                tooltip=popup_text, 
+                color=color,
+                fill=True,
+                fillColor=fillColor,
+                fillOpacity=0.7,
+                weight=2
+            ).add_to(m)
+        
+        st_folium(m, width=1500, height=500)
 # --------------------------
 # Weather Correlation
 # --------------------------
