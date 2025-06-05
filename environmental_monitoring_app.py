@@ -108,7 +108,7 @@ if selected_vars:
         (df["lat"].notna()) & (df["lon"].notna())
     ].copy()
     
-if not map_df.empty:
+    if not map_df.empty:
     map_agg = map_df.groupby(["region", "lat", "lon"])["value"].mean().reset_index()
 
 
