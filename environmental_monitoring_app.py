@@ -297,7 +297,7 @@ if not map_df.empty:
     
     # Afficher la carte
     st_folium(m, width=700, height=500)
-    else:
+else:
         st.info(f"No map data available for {map_var} in {selected_month_name}.")
 else:
     st.info("Please select at least one variable to show the map.")
