@@ -281,7 +281,7 @@ if not map_df.empty:
         hover_name="region",
         hover_data={"value": ":.2f"},  # Afficher la valeur avec 2 décimales
         title=f"{map_var} - Average Values by Region ({selected_month_name})",
-        mapbox_style="carto-darkmatter"  # Style sombre
+        mapbox_style="carto-positron"  # Style sombre
     )
     
     fig_map.update_layout(
