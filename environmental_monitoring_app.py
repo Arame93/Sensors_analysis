@@ -278,8 +278,7 @@ if not map_df.empty:
             weight=2
         ).add_to(m)
     
-    # Afficher la carte
-    st_folium(m, width=1200, height=500)
+    st_folium(m, width=1500, height=500)
 # --------------------------
 # Weather Correlation
 # --------------------------
