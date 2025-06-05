@@ -11,7 +11,6 @@ from streamlit_folium import st_folium
 # Page Setup and Title Styling
 # ------------------------------
 st.set_page_config(layout="wide")
-#layout="wide"
 
 st.markdown("""
     <style>
@@ -54,11 +53,18 @@ df["region"] = df["region"].replace(rename_items)
 # ------------------------------
 # Filter UI
 # ------------------------------
-#st.subheader("Filters")
 col1, col2 = st.columns(2)
 
+# Ajouter "All" aux options de régions
 regions = df["region"].dropna().unique()
-selected_region = col1.selectbox("Select Region", sorted(regions), key="region_select")
+region_options = ['All'] + sorted(regions)
+selected_region = col1.selectbox("Select Region", region_options, key="region_select")
+
+# Si "All" est sélectionné, utiliser toutes les régions
+if selected_region == 'All':
+    final_selected_regions = regions
+else:
+    final_selected_regions = [selected_region]
 
 month_numbers = sorted(df["month"].dropna().unique())
 month_names = [calendar.month_name[int(m)] for m in month_numbers]
@@ -72,15 +78,99 @@ var_cols = st.columns(3)
 selected_vars = [var for i, var in enumerate(all_vars) if var_cols[i % 3].checkbox(var, key=f"var_{var}")]
 
 # ------------------------------
-# Filter and Pivot the Data
+# CARTE EN PREMIÈRE POSITION
+# ------------------------------
+if selected_vars:
+    st.markdown("""
+        <style>
+            .subtitle {
+                background-color: #f0f0f0;
+                padding: 10px;
+                border-radius: 8px;
+                text-align: center;
+                color: #333333;
+                font-size: 20px;
+                font-weight: normal;
+                margin-top: 10px;
+                margin-bottom: 20px;
+            }
+        </style>
+        <div class="subtitle">Geographic Visualization</div>
+    """, unsafe_allow_html=True)
+    
+    map_var = st.selectbox("Select variable to show on the map", selected_vars, key="map_var_final")
+    
+    # Filtrer les données selon les filtres principaux
+    map_df = df[
+        (df["value_type"] == map_var) &
+        (df["month"] == selected_month) &
+        (df["region"].isin(final_selected_regions)) &
+        (df["lat"].notna()) & (df["lon"].notna())
+    ].copy()
+    
+    if not map_df.empty:
+        map_agg = map_df.groupby(["region", "lat", "lon"])["value"].mean().reset_index()
+        
+        lat_center = map_agg["lat"].mean()
+        lon_center = map_agg["lon"].mean()
+        
+        import math
+        
+        def calculate_zoom(lat_range, lon_range):
+            max_range = max(lat_range, lon_range)
+            if max_range == 0:
+                return 10
+            zoom = math.log2(360 / max_range) - 1
+            return max(1, min(15, int(zoom)))  
+        
+        lat_range = map_agg["lat"].max() - map_agg["lat"].min()
+        lon_range = map_agg["lon"].max() - map_agg["lon"].min()
+        
+        lat_range *= 1.2
+        lon_range *= 1.2
+        
+        zoom_level = calculate_zoom(lat_range, lon_range)
+
+        fig_map = px.scatter_mapbox(
+            map_agg,
+            lat="lat",
+            lon="lon",
+            size="value",
+            color="value",
+            color_continuous_scale="Reds",  
+            size_max=20,
+            zoom=zoom_level,
+            center={"lat": lat_center, "lon": lon_center},
+            hover_name="region",
+            hover_data={"value": ":.2f"},  
+            title=f"{map_var} - Average Values by Region ({selected_month_name})",
+            mapbox_style="carto-positron"
+        )
+        
+        fig_map.update_layout(
+            height=600,
+            margin={"r":0,"t":40,"l":0,"b":0},
+            title_font_size=16,
+            title_x=0.5  
+        )
+        
+        st.plotly_chart(fig_map, use_container_width=True)
+    else:
+        st.warning("No geographic data available for the selected filters.")
+
+# ------------------------------
+# Filter and Pivot the Data pour les graphiques suivants
 # ------------------------------
 filtered_df = pd.DataFrame()
 pivot_df = pd.DataFrame()
 available_vars = []
 
 if selected_vars:
+    # Filtrer selon la sélection de région (pour les graphiques détaillés, on garde une seule région)
+    region_for_details = selected_region if selected_region != 'All' else final_selected_regions[0]
+    
     filtered_df = df[
-        (df["region"] == selected_region) &
+        (df["region"] == region_for_details) &
         (df["month"] == selected_month) &
         (df["value_type"].isin(selected_vars))
     ]
@@ -96,98 +186,17 @@ if selected_vars:
         available_vars = [v for v in selected_vars if v in pivot_df.columns]
 
 # --------------------------
-# Map of Selected Variable by Region
-# --------------------------
-st.markdown("""
-    <style>
-        .subtitle {
-            background-color: #f0f0f0;  /* light grey */
-            padding: 10px;
-            border-radius: 8px;
-            text-align: center;
-            color: #333333;  /* dark grey text */
-            font-size: 20px;  /* smaller font size */
-            font-weight: normal;
-            margin-top: 10px;
-            margin-bottom: 20px;
-        }
-    </style>
-    <div class="subtitle"> Map by Region </div>
-""", unsafe_allow_html=True)
-
-if selected_vars:
-    map_var = st.selectbox("Select variable to show on the map", selected_vars, key="map_var_final")
-    map_df = df[
-        (df["value_type"] == map_var) &
-        (df["month"] == selected_month) &
-        (df["lat"].notna()) & (df["lon"].notna())
-    ].copy()
-    
-if not map_df.empty:
-    map_agg = map_df.groupby(["region", "lat", "lon"])["value"].mean().reset_index()
-
-
-    lat_center = map_agg["lat"].mean()
-    lon_center = map_agg["lon"].mean()
-    
-    import math
-    
-    def calculate_zoom(lat_range, lon_range):
-        # Formule approximative pour calculer le zoom optimal
-        max_range = max(lat_range, lon_range)
-        if max_range == 0:
-            return 10
-        zoom = math.log2(360 / max_range) - 1
-        return max(1, min(15, int(zoom)))  
-    
-    lat_range = map_agg["lat"].max() - map_agg["lat"].min()
-    lon_range = map_agg["lon"].max() - map_agg["lon"].min()
-    
-    lat_range *= 1.2
-    lon_range *= 1.2
-    
-    zoom_level = calculate_zoom(lat_range, lon_range)
-
-    fig_map = px.scatter_mapbox(
-        map_agg,
-        lat="lat",
-        lon="lon",
-        size="value",
-        color="value",
-        color_continuous_scale="Reds",  
-        size_max=20,
-        zoom=zoom_level,
-        center={"lat": lat_center, "lon": lon_center},
-        hover_name="region",
-        hover_data={"value": ":.2f"},  
-        title=f"{map_var} - Average Values by Region ({selected_month_name})",
-        #mapbox_style="carto-darkmatter"
-        mapbox_style="carto-positron"
-    )
-    
-    fig_map.update_layout(
-        height=600,
-        margin={"r":0,"t":40,"l":0,"b":0},
-        title_font_size=16,
-        title_x=0.5  
-    )
-    
-    st.plotly_chart(fig_map, use_container_width=True)
-    
-# --------------------------
 # Daily and Hourly Trend Charts
 # --------------------------
-# daily plot with click interaction
-#st.header("Daily trends")
 st.markdown("""
     <style>
         .subtitle {
-            background-color: #f0f0f0;  /* light grey */
+            background-color: #f0f0f0;
             padding: 10px;
             border-radius: 8px;
             text-align: center;
-            color: #333333;  /* dark grey text */
-            font-size: 20px;  /* smaller font size */
+            color: #333333;
+            font-size: 20px;
             font-weight: normal;
             margin-top: 10px;
             margin-bottom: 20px;
@@ -196,27 +205,19 @@ st.markdown("""
     <div class="subtitle">Daily and hourly trends</div>
 """, unsafe_allow_html=True)
 
-#st.header("Daily and hourly trends")
-#col1, col2 = st.columns(2)
-
-# --- Left Column: Daily Trend Chart ---
-#with col1:
 if not pivot_df.empty:
+    # Daily trends
     daily_df = pivot_df.groupby("date")[available_vars].mean().reset_index()
     fig = px.line(
         daily_df, x="date", y=available_vars,
-        title=f"Daily Averages in {selected_region} ({selected_month_name})"
+        title=f"Daily Averages in {region_for_details} ({selected_month_name})"
     )
     st.plotly_chart(fig, use_container_width=True)
 
-# --- Right Column: Hourly Trend Chart with Date Selector ---
-#with col2:
-if not pivot_df.empty:
-    # Add a date selector based on available dates
+    # Hourly trends with date selector
     unique_dates = pivot_df["date"].dropna().unique()
     selected_date = st.selectbox("Select a date for hourly trends", sorted(unique_dates))
 
-    # Filter and plot hourly data for selected date
     hourly_df = pivot_df[pivot_df["date"] == selected_date].groupby("hour")[available_vars].mean().reset_index()
 
     fig_hourly = px.line(
@@ -224,21 +225,21 @@ if not pivot_df.empty:
         title=f"Hourly Averages on {selected_date}"
     )
     st.plotly_chart(fig_hourly, use_container_width=True)
+else:
+    st.info("Please select variables and ensure data is available for detailed trends.")
 
-        
 # --------------------------
 # Anomaly Detection
 # --------------------------
-#st.subheader("Anomaly Detection")
 st.markdown("""
     <style>
         .subtitle {
-            background-color: #f0f0f0;  /* light grey */
+            background-color: #f0f0f0;
             padding: 10px;
             border-radius: 8px;
             text-align: center;
-            color: #333333;  /* dark grey text */
-            font-size: 20px;  /* smaller font size */
+            color: #333333;
+            font-size: 20px;
             font-weight: normal;
             margin-top: 10px;
             margin-bottom: 20px;
@@ -251,7 +252,7 @@ if not filtered_df.empty:
     fig_anomaly = px.box(
         filtered_df,
         x="value_type", y="value",
-        title="Outlier Detection",
+        title=f"Outlier Detection - {region_for_details}",
         points="outliers"
     )
     fig_anomaly.update_layout(xaxis_title=None)
@@ -260,61 +261,24 @@ else:
     st.info("Not enough data to detect anomalies.")
 
 # --------------------------
-# Regional Comparison
+# Variables Correlation
 # --------------------------
-#st.subheader("Regional Comparison")
-#st.markdown("""
-    #<style>
-        #subtitle {
-           # background-color: #f0f0f0;  /* light grey */
-            #padding: 10px;
-            #border-radius: 8px;
-            #text-align: center;
-            #color: #333333;  /* dark grey text */
-            #font-size: 20px;  /* smaller font size */
-            #font-weight: normal;
-            #margin-top: 10px;
-            #margin-bottom: 20px;
-    #    }
-    #</style>
-    #<div class="subtitle">Regional Comparison</div> , unsafe_allow_html=True)
-
-#compare_df = df[df["value_type"].isin(selected_vars)]
-
-#if not compare_df.empty:
- #   region_avg = compare_df.groupby(["region", "value_type"])["value"].mean().reset_index()
-  #  fig_compare = px.bar(
-   #     region_avg,
-    #    x="region", y="value", color="value_type",
-     #   barmode="group", title="Average Values by Region"
-    #)
-    #st.plotly_chart(fig_compare, use_container_width=True)
-#else:
-    st.info("No data available for regional comparison.")
-
-
-
-# --------------------------
-# Weather Correlation
-# --------------------------
-#st.subheader("🌦️ Weather Correlation")
 st.markdown("""
     <style>
         .subtitle {
-            background-color: #f0f0f0;  /* light grey */
+            background-color: #f0f0f0;
             padding: 10px;
             border-radius: 8px;
             text-align: center;
-            color: #333333;  /* dark grey text */
-            font-size: 20px;  /* smaller font size */
+            color: #333333;
+            font-size: 20px;
             font-weight: normal;
             margin-top: 10px;
             margin-bottom: 20px;
         }
     </style>
-    <div class="subtitle"> Variables Correlation</div>
+    <div class="subtitle">Variables Correlation</div>
 """, unsafe_allow_html=True)
-
 
 if available_vars and not pivot_df.empty:
     corr_df = pivot_df[available_vars].dropna()
@@ -324,7 +288,7 @@ if available_vars and not pivot_df.empty:
             corr_matrix,
             text_auto=True,
             color_continuous_scale="RdBu_r",
-            title="Correlation Heatmap between Selected Variables",
+            title=f"Correlation Heatmap - {region_for_details}",
             labels=dict(color="Correlation"),
             aspect="auto"
         )
