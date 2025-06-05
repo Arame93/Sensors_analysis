@@ -108,7 +108,7 @@ if selected_vars:
         (df["lat"].notna()) & (df["lon"].notna())
     ].copy()
     
-    if not map_df.empty:
+if not map_df.empty:
     map_agg = map_df.groupby(["region", "lat", "lon"])["value"].mean().reset_index()
 
 
@@ -158,6 +158,7 @@ if selected_vars:
     )
     
     st.plotly_chart(fig_map, use_container_width=True)
+
 # --------------------------
 # Daily and Hourly Trend Charts
 # --------------------------
