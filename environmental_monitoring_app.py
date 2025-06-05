@@ -234,46 +234,48 @@ st.markdown("""
     </style>
     <div class="subtitle">Map by Region</div>
 """, unsafe_allow_html=True)
+
 if selected_vars:
     map_var = st.selectbox("Select variable to show on the map", selected_vars, key="map_var_final")
-
+    
     map_df = df[
         (df["value_type"] == map_var) &
         (df["month"] == selected_month) &
         (df["lat"].notna()) & (df["lon"].notna())
     ].copy()
-
-if not map_df.empty:
-    map_agg = map_df.groupby(["region", "lat", "lon"])["value"].mean().reset_index()
     
-    # Créer une carte Folium avec OpenStreetMap
-    lat_center = map_agg["lat"].mean()
-    lon_center = map_agg["lon"].mean()
-    
-    m = folium.Map(
-        location=[lat_center, lon_center],
-        zoom_start=6,
-        tiles='OpenStreetMap'  # OpenStreetMap direct !
-    )
-    
-    # Ajouter les points
-    for _, row in map_agg.iterrows():
-        # Taille du cercle basée sur la valeur
-        radius = row['value'] / map_agg['value'].max() * 20 + 5
+    if not map_df.empty:  # Indentation corrigée
+        map_agg = map_df.groupby(["region", "lat", "lon"])["value"].mean().reset_index()
         
-        folium.CircleMarker(
-            location=[row['lat'], row['lon']],
-            radius=radius,
-            popup=f"{row['region']}: {row['value']:.2f}",
-            color='red',
-            fill=True,
-            fillColor='red',
-            fillOpacity=0.6
-        ).add_to(m)
-    
-    # Afficher dans Streamlit
-    st_folium(m, width=700, height=500)
-
+        lat_center = map_agg["lat"].mean()
+        lon_center = map_agg["lon"].mean()
+        
+        m = folium.Map(
+            location=[lat_center, lon_center],
+            zoom_start=6,
+            tiles='OpenStreetMap'
+        )
+        
+        for _, row in map_agg.iterrows():  # Underscore corrigé et variable corrigée
+            # Taille du cercle basée sur la valeur
+            radius = row['value'] / map_agg['value'].max() * 20 + 5
+            
+            folium.CircleMarker(
+                location=[row['lat'], row['lon']],
+                radius=radius,
+                popup=f"{row['region']}: {row['value']:.2f}",
+                color='red',
+                fill=True,
+                fillColor='red',
+                fillOpacity=0.6
+            ).add_to(m)
+        
+        # Afficher dans Streamlit
+        st_folium(m, width=700, height=500)
+    else:
+        st.info(f"No map data available for {map_var} in {selected_month_name}.")
+else:
+    st.info("Please select at least one variable to show the map.")
 # --------------------------
 # Weather Correlation
 # --------------------------
